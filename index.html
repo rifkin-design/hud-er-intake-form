@@ -12,11 +12,11 @@
   AZ-RI Consultants &mdash; az-ri.com
   =============================================================================
   CONFIGURATION (search for "CONFIGURATION" inside <script>):
-    1. FORMSPREE_ENDPOINT \u2014 your Formspree form URL (required)
-    2. VERIFY_API_URL     \u2014 Cloudflare Worker URL for OTP email verification.
+    1. FORMSPREE_ENDPOINT &mdash; your Formspree form URL (required)
+    2. VERIFY_API_URL     &mdash; Cloudflare Worker URL for OTP email verification.
                             Leave empty to skip OTP (recommended for launch).
-    3. COMPETITOR_DOMAINS \u2014 domains to silently block from getting pricing
-    4. PRICES             \u2014 the buildQuote() function holds the full pricing
+    3. COMPETITOR_DOMAINS &mdash; domains to silently block from getting pricing
+    4. PRICES             &mdash; the buildQuote() function holds the full pricing
                             structure (review fee + required ESA component)
   =============================================================================
 -->
@@ -237,7 +237,7 @@
 <div class="er-wrap">
 
   <div class="er-header">
-    <h1>HUD Part 58 Environmental Review \u2014 Instant Quote</h1>
+    <h1>HUD Part 58 Environmental Review &mdash; Instant Quote</h1>
     <p class="lede">Answer a few quick questions about your HUD-funded project. We'll determine the required level of review under 24 CFR Part 58 and give you a fixed-fee quote on the spot.</p>
   </div>
 
@@ -270,25 +270,25 @@
     <div class="field">
       <label>HUD funding program <span class="req">*</span></label>
       <select name="funding_program" required>
-        <option value="">\u2014 select program \u2014</option>
+        <option value="">&mdash; select program &mdash;</option>
         <optgroup label="Formula / entitlement programs">
-          <option>CDBG \u2014 Community Development Block Grant</option>
-          <option>HOME \u2014 HOME Investment Partnerships</option>
-          <option>ESG \u2014 Emergency Solutions Grants</option>
-          <option>HOPWA \u2014 Housing Opportunities for Persons With AIDS</option>
-          <option>HTF \u2014 Housing Trust Fund</option>
+          <option>CDBG &mdash; Community Development Block Grant</option>
+          <option>HOME &mdash; HOME Investment Partnerships</option>
+          <option>ESG &mdash; Emergency Solutions Grants</option>
+          <option>HOPWA &mdash; Housing Opportunities for Persons With AIDS</option>
+          <option>HTF &mdash; Housing Trust Fund</option>
         </optgroup>
         <optgroup label="Competitive / special programs">
-          <option>NSP \u2014 Neighborhood Stabilization Program</option>
-          <option>CPF \u2014 Community Project Funding (earmarks)</option>
-          <option>CoC \u2014 Continuum of Care</option>
+          <option>NSP &mdash; Neighborhood Stabilization Program</option>
+          <option>CPF &mdash; Community Project Funding (earmarks)</option>
+          <option>CoC &mdash; Continuum of Care</option>
           <option>Section 108 Loan Guarantee</option>
-          <option>Section 4 \u2014 Capacity Building</option>
+          <option>Section 4 &mdash; Capacity Building</option>
           <option>Choice Neighborhoods</option>
         </optgroup>
         <optgroup label="Tribal programs">
-          <option>ICDBG \u2014 Indian CDBG</option>
-          <option>IHBG \u2014 Indian Housing Block Grant</option>
+          <option>ICDBG &mdash; Indian CDBG</option>
+          <option>IHBG &mdash; Indian Housing Block Grant</option>
         </optgroup>
         <optgroup label="Other">
           <option>Multiple HUD programs</option>
@@ -300,33 +300,33 @@
     <div class="field">
       <label>What HUD-funded activity do you need a review for? <span class="req">*</span></label>
       <select name="activity_category" id="activity_category" required>
-        <option value="">\u2014 select the closest match \u2014</option>
+        <option value="">&mdash; select the closest match &mdash;</option>
         <optgroup label="Services &amp; administrative">
           <option value="planning_admin">Planning, administration, technical assistance, training, design (no construction)</option>
           <option value="tbra">Tenant-Based Rental Assistance (TBRA)</option>
           <option value="supportive_services">Supportive services (case management, employment, health, etc.)</option>
           <option value="operating_costs">Operating costs / utilities / maintenance / staff salaries</option>
-          <option value="econ_dev_no_construction">Economic development \u2014 jobs/training (no construction)</option>
+          <option value="econ_dev_no_construction">Economic development &mdash; jobs/training (no construction)</option>
           <option value="homebuyer_existing">Homebuyer assistance for existing units (DPA, closing costs)</option>
           <option value="predev_costs">Affordable housing pre-development costs</option>
         </optgroup>
         <optgroup label="Acquisition / rehab">
           <option value="acquisition_existing_no_change">Acquisition of an existing structure (no rehab, no use change)</option>
-          <option value="rehab_residential_1to4">Rehab of an existing 1\u20134 unit residential building</option>
+          <option value="rehab_residential_1to4">Rehab of an existing 1&ndash;4 unit residential building</option>
           <option value="rehab_residential_5plus">Rehab of an existing multifamily building (5+ units)</option>
           <option value="rehab_nonresidential">Rehab of an existing non-residential building</option>
           <option value="rehab_public_facility">Rehab/improvement of an existing public facility (water, sewer, streets, community building)</option>
         </optgroup>
         <optgroup label="New construction or significant change">
-          <option value="new_construction_sf">New construction \u2014 single-family</option>
-          <option value="new_construction_mf">New construction \u2014 multifamily</option>
-          <option value="new_construction_public">New construction \u2014 public facility / infrastructure</option>
+          <option value="new_construction_sf">New construction &mdash; single-family</option>
+          <option value="new_construction_mf">New construction &mdash; multifamily</option>
+          <option value="new_construction_public">New construction &mdash; public facility / infrastructure</option>
           <option value="acquisition_vacant_for_construction">Acquisition of vacant land for future construction</option>
           <option value="demolition">Demolition</option>
           <option value="change_of_use">Change of land use (e.g., commercial &rarr; residential)</option>
         </optgroup>
         <optgroup label="Other">
-          <option value="not_sure">Not sure \u2014 let's talk</option>
+          <option value="not_sure">Not sure &mdash; let's talk</option>
         </optgroup>
       </select>
     </div>
@@ -358,25 +358,25 @@
       <div class="field">
         <label>What type of structure? <span class="req">*</span></label>
         <div class="radio-group">
-          <label><input type="radio" name="property_type" value="sf"> <span>Single-family / 1\u20134 unit residential</span></label>
+          <label><input type="radio" name="property_type" value="sf"> <span>Single-family / 1&ndash;4 unit residential</span></label>
           <label><input type="radio" name="property_type" value="other"> <span>Multifamily, commercial, or other</span></label>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <label>Project location <span class="opt">(optional \u2014 helps with travel-zone pricing)</span></label>
+      <label>Project location <span class="opt">(optional &mdash; helps with travel-zone pricing)</span></label>
       <input type="text" name="project_location" placeholder="City, State">
     </div>
 
-    <input type="hidden" name="_subject" id="hidden_subject" value="HUD ER Quote Request \u2014 new submission">
+    <input type="hidden" name="_subject" id="hidden_subject" value="HUD ER Quote Request &mdash; new submission">
     <input type="hidden" name="determined_level" id="hidden_level">
     <input type="hidden" name="determined_cite" id="hidden_cite">
     <input type="hidden" name="quote_breakdown" id="hidden_breakdown">
     <input type="hidden" name="quote_total" id="hidden_total">
     <input type="hidden" name="email" id="hidden_email">
 
-    <button type="submit" class="btn" id="submit-btn">Get my fixed-fee quote</button>
+    <button type="submit" class="btn" id="submit-btn">Get my quote</button>
 
     <div id="otp-step">
       <h3>Confirm your email</h3>
@@ -401,7 +401,7 @@
     <p class="explain" id="r-explain"></p>
 
     <div class="quote-box" id="r-quote-box">
-      <p class="price-label">Project quote \u2014 fixed fee</p>
+      <p class="price-label">Project quote &mdash; fixed fee</p>
       <ul class="components" id="r-components"></ul>
       <div class="total-row" id="r-total-row">
         <span class="total-label">Total</span>
@@ -427,7 +427,7 @@
 
 <script>
 /* =============================================================================
-   CONFIGURATION \u2014 edit these
+   CONFIGURATION &mdash; edit these
    ========================================================================== */
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzlanjd";
@@ -435,24 +435,24 @@ const VERIFY_API_URL     = ""; // empty = no OTP (recommended for marketing-tool
 // Pulled from the AZ-RI Rolling Target List (Peer Environmental Firms +
 // incumbent consultants documented on competing HUD ERRs). Domains marked
 // with [✓] were confirmed in the CRM; others are inferred from public
-// records and should be verified \u2014 but blocking them at the email gate is
+// records and should be verified &mdash; but blocking them at the email gate is
 // safe (a competitor employee would never legitimately use this form).
 const COMPETITOR_DOMAINS = [
-  'aec-env.com',                       // [✓] Advantage Environmental Consultants (AEC) \u2014 PG County DHCD incumbent
-  'mandl.net',                         // [✓] Mullin & Lonergan Associates (M&L) \u2014 Wilmington DE incumbent
-  'geosyntec.com',                     // Geosyntec \u2014 Engineering Peer (subs work, but block their staff from pricing)
-  'd3g.com',                           // Dominion Due Diligence Group \u2014 bundled-CNA national firm (Capital One, ColumbiaNational, Lument)
-  'aeiconsultants.com',                // AEI Consultants \u2014 bundled-CNA national firm (Lument)
-  'ebiconsulting.com',                 // EBI Consulting \u2014 used by Time Group on 1111 Light St
+  'aec-env.com',                       // [✓] Advantage Environmental Consultants (AEC) &mdash; PG County DHCD incumbent
+  'mandl.net',                         // [✓] Mullin & Lonergan Associates (M&L) &mdash; Wilmington DE incumbent
+  'geosyntec.com',                     // Geosyntec &mdash; Engineering Peer (subs work, but block their staff from pricing)
+  'd3g.com',                           // Dominion Due Diligence Group &mdash; bundled-CNA national firm (Capital One, ColumbiaNational, Lument)
+  'aeiconsultants.com',                // AEI Consultants &mdash; bundled-CNA national firm (Lument)
+  'ebiconsulting.com',                 // EBI Consulting &mdash; used by Time Group on 1111 Light St
   'partneresi.com',                    // Partner Engineering and Science / Partner Assessment Corp (Merchants Capital, HVPG)
-  'urbangreenenvironmental.com',       // Urban Green Environmental \u2014 Denise Sullivan / David Sena (multiple Baltimore City Part 58 deals)
-  'tenbearsenviro.com',                // Ten Bears Environmental Associates \u2014 John Sunkler (Sussex County DE incumbent)
-  'repsg.com',                         // REPSG Inc. \u2014 Ellie Johnston (SA+A / Wilmington Scattered Sites)
-  'ehc.us',                            // Environmental Health Consultants (Emily Dyson) \u2014 used by NHP Foundation
-  // Add more as you encounter them \u2014 and let me know if you spot any new
+  'urbangreenenvironmental.com',       // Urban Green Environmental &mdash; Denise Sullivan / David Sena (multiple Baltimore City Part 58 deals)
+  'tenbearsenviro.com',                // Ten Bears Environmental Associates &mdash; John Sunkler (Sussex County DE incumbent)
+  'repsg.com',                         // REPSG Inc. &mdash; Ellie Johnston (SA+A / Wilmington Scattered Sites)
+  'ehc.us',                            // Environmental Health Consultants (Emily Dyson) &mdash; used by NHP Foundation
+  // Add more as you encounter them &mdash; and let me know if you spot any new
   // incumbent consultants in HEROS that should be added.
 ];
-// (No booking URL \u2014 single "Email us" CTA points at info@az-ri.com)
+// (No booking URL &mdash; single "Email us" CTA points at info@az-ri.com)
 
 const FREE_EMAIL_DOMAINS = [
   'gmail.com','googlemail.com','yahoo.com','ymail.com','rocketmail.com',
@@ -464,7 +464,7 @@ const FREE_EMAIL_DOMAINS = [
 ];
 
 /* =============================================================================
-   PRICING \u2014 single source of truth
+   PRICING &mdash; single source of truth
    Built from the 2025 pricing sheet:
      CENST $500 | CEST $1,750 | CEST+EA $3,500
      Phase I ESA $2,800 | Limited ESA $1,250
@@ -482,7 +482,7 @@ const PRICE_LIMITED_ESA = 1250;
 
 function fmt$(n) { return "$" + n.toLocaleString("en-US"); }
 
-// Single-family eligibility for Limited ESA (HUD definition: 1\u20134 units residential)
+// Single-family eligibility for Limited ESA (HUD definition: 1&ndash;4 units residential)
 function isSingleFamily(d) {
   if (['rehab_residential_1to4','new_construction_sf','homebuyer_existing'].includes(d.activity_category)) return true;
   if (d.activity_category === 'acquisition_existing_no_change' && d.property_type === 'sf') return true;
@@ -494,7 +494,7 @@ function buildQuote(det, d) {
     return { components: [], total: 0, totalDisplay: "No charge", note: "Exempt activities require no environmental review work." };
   }
   if (det.key === 'CONSULT') {
-    return { components: [], total: null, totalDisplay: "Custom \u2014 let's talk", note: "Your project profile needs a brief consultation before we can finalize a quote." };
+    return { components: [], total: null, totalDisplay: "Custom &mdash; let's talk", note: "Your project profile needs a brief consultation before we can finalize a quote." };
   }
   if (det.key === 'CENST') {
     return {
@@ -506,7 +506,7 @@ function buildQuote(det, d) {
     };
   }
 
-  // CEST or EA \u2014 review fee + REQUIRED ESA component
+  // CEST or EA &mdash; review fee + REQUIRED ESA component
   const reviewFee   = det.key === 'EA' ? PRICE_REVIEW.EA : PRICE_REVIEW.CEST;
   const reviewName  = det.key === 'EA' ? "HUD Environmental Review with EA (NEPA)" : "HUD Environmental Review (CEST)";
   const reviewNote  = det.key === 'EA'
@@ -527,7 +527,7 @@ function buildQuote(det, d) {
       name: "Phase I ESA (ASTM E1527-21)",
       amount: PRICE_PHASE_I,
       amountDisplay: fmt$(PRICE_PHASE_I),
-      note: "Required to address the contamination section. May range $2,300\u2013$2,800 based on size and complexity of the property."
+      note: "Required to address the contamination section. May range $2,300&ndash;$2,800 based on size and complexity of the property."
     };
   }
 
@@ -543,7 +543,7 @@ function buildQuote(det, d) {
 }
 
 /* =============================================================================
-   DETERMINATION LOGIC \u2014 24 CFR Part 58
+   DETERMINATION LOGIC &mdash; 24 CFR Part 58
    ========================================================================== */
 
 function determineLevel(d) {
@@ -567,18 +567,18 @@ function determineLevel(d) {
     return {
       level: "CENST",
       cite: `24 CFR \u00A758.35${censt[a].sub}`,
-      explain: `${censt[a].desc} is categorically excluded and not subject to \u00A758.5 \u2014 only \u00A758.6 statutory compliance applies.`,
+      explain: `${censt[a].desc} is categorically excluded and not subject to \u00A758.5 &mdash; only \u00A758.6 statutory compliance applies.`,
       key: "CENST"
     };
   }
 
   if (a === 'acquisition_existing_no_change') {
-    return { level: "CEST", cite: "24 CFR \u00A758.35(a)(5)", explain: "Acquisition of an existing structure with no change of use is categorically excluded subject to \u00A758.5 \u2014 full related-laws review required.", key: "CEST" };
+    return { level: "CEST", cite: "24 CFR \u00A758.35(a)(5)", explain: "Acquisition of an existing structure with no change of use is categorically excluded subject to \u00A758.5 &mdash; full related-laws review required.", key: "CEST" };
   }
   if (a === 'rehab_residential_1to4') {
     return exceeds
-      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Rehab of 1\u20134 unit residential that exceeds the \u00A758.35(a)(3)(i) thresholds typically requires an Environmental Assessment.", key: "EA" }
-      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(3)(i)", explain: "Rehab of 1\u20134 unit residential within the \u00A758.35(a)(3)(i) thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
+      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Rehab of 1&ndash;4 unit residential that exceeds the \u00A758.35(a)(3)(i) thresholds typically requires an Environmental Assessment.", key: "EA" }
+      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(3)(i)", explain: "Rehab of 1&ndash;4 unit residential within the \u00A758.35(a)(3)(i) thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
   }
   if (a === 'rehab_residential_5plus') {
     return exceeds
@@ -722,7 +722,7 @@ form.addEventListener('submit', async (e) => {
     startResendTimer();
   } catch {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Get my fixed-fee quote";
+    submitBtn.textContent = "Get my quote";
     alert("Could not send verification code. Please try again or email us at info@az-ri.com.");
   }
 });
@@ -792,11 +792,11 @@ async function finalizeSubmit() {
   document.getElementById('hidden_breakdown').value = quote.components.map(c => `${c.name}: ${c.amountDisplay}`).join(' | ');
   document.getElementById('hidden_total').value     = quote.totalDisplay;
   document.getElementById('hidden_email').value     = emailField.value.trim();
-  document.getElementById('hidden_subject').value   = `HUD ER Quote \u2014 ${det.level} \u2014 ${data.contact_org || ''}`.trim();
+  document.getElementById('hidden_subject').value   = `HUD ER Quote &mdash; ${det.level} &mdash; ${data.contact_org || ''}`.trim();
 
   const isDemo = FORMSPREE_ENDPOINT.includes("YOUR_FORMSPREE_ID");
   if (isDemo) {
-    console.log("DEMO MODE \u2014 Formspree submission skipped.", { ...data, level: det.level, cite: det.cite, total: quote.totalDisplay });
+    console.log("DEMO MODE &mdash; Formspree submission skipped.", { ...data, level: det.level, cite: det.cite, total: quote.totalDisplay });
     return showResult(det, quote, data, true);
   }
 
@@ -833,7 +833,7 @@ function showResult(det, quote, data, isDemo) {
     document.getElementById('r-total').textContent = quote.totalDisplay + (typeof quote.total === 'number' ? '' : '');
     document.getElementById('r-total-row').style.display = '';
   } else {
-    // No line items \u2014 exempt or consult
+    // No line items &mdash; exempt or consult
     ul.innerHTML = `<li><span class="note">${quote.note || ''}</span></li>`;
     document.getElementById('r-total').textContent = quote.totalDisplay;
     if (quote.total === 0 || quote.total === null) {
@@ -844,7 +844,7 @@ function showResult(det, quote, data, isDemo) {
   if (isDemo) {
     const banner = document.createElement('div');
     banner.style.cssText = "background:#FFF8E1;border:1px solid #E6B800;padding:10px 14px;border-radius:4px;margin-bottom:16px;font-size:13px;color:#7A5A00;";
-    banner.innerHTML = "<strong>Demo mode.</strong> Formspree endpoint not configured \u2014 submission was not sent. Configure <code>FORMSPREE_ENDPOINT</code> to enable real submissions.";
+    banner.innerHTML = "<strong>Demo mode.</strong> Formspree endpoint not configured &mdash; submission was not sent. Configure <code>FORMSPREE_ENDPOINT</code> to enable real submissions.";
     resultPanel.insertBefore(banner, resultPanel.firstChild);
   }
 
