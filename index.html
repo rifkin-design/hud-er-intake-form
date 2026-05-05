@@ -12,11 +12,11 @@
   AZ-RI Consultants &mdash; az-ri.com
   =============================================================================
   CONFIGURATION (search for "CONFIGURATION" inside <script>):
-    1. FORMSPREE_ENDPOINT \u2014 your Formspree form URL (required)
-    2. VERIFY_API_URL     \u2014 Cloudflare Worker URL for OTP email verification.
+    1. FORMSPREE_ENDPOINT &mdash; your Formspree form URL (required)
+    2. VERIFY_API_URL     &mdash; Cloudflare Worker URL for OTP email verification.
                             Leave empty to skip OTP (recommended for launch).
-    3. COMPETITOR_DOMAINS \u2014 domains to silently block from getting pricing
-    4. PRICES             \u2014 the buildQuote() function holds the full pricing
+    3. COMPETITOR_DOMAINS &mdash; domains to silently block from getting pricing
+    4. PRICES             &mdash; the buildQuote() function holds the full pricing
                             structure (review fee + required ESA component)
   =============================================================================
 -->
@@ -237,7 +237,7 @@
 <div class="er-wrap">
 
   <div class="er-header">
-    <h1>HUD Part 58 Environmental Review \u2014 Instant Quote</h1>
+    <h1>HUD Part 58 Environmental Review &mdash; Instant Quote</h1>
     <p class="lede">Answer a few quick questions about your HUD-funded project. We'll determine the required level of review under 24 CFR Part 58 and give you a quote on the spot.</p>
   </div>
 
@@ -270,25 +270,25 @@
     <div class="field">
       <label>HUD funding program <span class="req">*</span></label>
       <select name="funding_program" required>
-        <option value="">\u2014 select program \u2014</option>
+        <option value="">&mdash; select program &mdash;</option>
         <optgroup label="Formula / entitlement programs">
-          <option>CDBG \u2014 Community Development Block Grant</option>
-          <option>HOME \u2014 HOME Investment Partnerships</option>
-          <option>ESG \u2014 Emergency Solutions Grants</option>
-          <option>HOPWA \u2014 Housing Opportunities for Persons With AIDS</option>
-          <option>HTF \u2014 Housing Trust Fund</option>
+          <option>CDBG &mdash; Community Development Block Grant</option>
+          <option>HOME &mdash; HOME Investment Partnerships</option>
+          <option>ESG &mdash; Emergency Solutions Grants</option>
+          <option>HOPWA &mdash; Housing Opportunities for Persons With AIDS</option>
+          <option>HTF &mdash; Housing Trust Fund</option>
         </optgroup>
         <optgroup label="Competitive / special programs">
-          <option>NSP \u2014 Neighborhood Stabilization Program</option>
-          <option>CPF \u2014 Community Project Funding (earmarks)</option>
-          <option>CoC \u2014 Continuum of Care</option>
+          <option>NSP &mdash; Neighborhood Stabilization Program</option>
+          <option>CPF &mdash; Community Project Funding (earmarks)</option>
+          <option>CoC &mdash; Continuum of Care</option>
           <option>Section 108 Loan Guarantee</option>
-          <option>Section 4 \u2014 Capacity Building</option>
+          <option>Section 4 &mdash; Capacity Building</option>
           <option>Choice Neighborhoods</option>
         </optgroup>
         <optgroup label="Tribal programs">
-          <option>ICDBG \u2014 Indian CDBG</option>
-          <option>IHBG \u2014 Indian Housing Block Grant</option>
+          <option>ICDBG &mdash; Indian CDBG</option>
+          <option>IHBG &mdash; Indian Housing Block Grant</option>
         </optgroup>
         <optgroup label="Other">
           <option>Multiple HUD programs</option>
@@ -300,33 +300,33 @@
     <div class="field">
       <label>What HUD-funded activity do you need a review for? <span class="req">*</span></label>
       <select name="activity_category" id="activity_category" required>
-        <option value="">\u2014 select the closest match \u2014</option>
+        <option value="">&mdash; select the closest match &mdash;</option>
         <optgroup label="Services &amp; administrative">
           <option value="planning_admin">Planning, administration, technical assistance, training, design (no construction)</option>
           <option value="tbra">Tenant-Based Rental Assistance (TBRA)</option>
           <option value="supportive_services">Supportive services (case management, employment, health, etc.)</option>
           <option value="operating_costs">Operating costs / utilities / maintenance / staff salaries</option>
-          <option value="econ_dev_no_construction">Economic development \u2014 jobs/training (no construction)</option>
+          <option value="econ_dev_no_construction">Economic development &mdash; jobs/training (no construction)</option>
           <option value="homebuyer_existing">Homebuyer assistance for existing units (DPA, closing costs)</option>
           <option value="predev_costs">Affordable housing pre-development costs</option>
         </optgroup>
         <optgroup label="Acquisition / rehab">
           <option value="acquisition_existing_no_change">Acquisition of an existing structure (no rehab, no use change)</option>
-          <option value="rehab_residential_1to4">Rehab of an existing 1\u20134 unit residential building</option>
+          <option value="rehab_residential_1to4">Rehab of an existing 1&ndash;4 unit residential building</option>
           <option value="rehab_residential_5plus">Rehab of an existing multifamily building (5+ units)</option>
           <option value="rehab_nonresidential">Rehab of an existing non-residential building</option>
           <option value="rehab_public_facility">Rehab/improvement of an existing public facility (water, sewer, streets, community building)</option>
         </optgroup>
         <optgroup label="New construction or significant change">
-          <option value="new_construction_sf">New construction \u2014 single-family</option>
-          <option value="new_construction_mf">New construction \u2014 multifamily</option>
-          <option value="new_construction_public">New construction \u2014 public facility / infrastructure</option>
+          <option value="new_construction_sf">New construction &mdash; single-family</option>
+          <option value="new_construction_mf">New construction &mdash; multifamily</option>
+          <option value="new_construction_public">New construction &mdash; public facility / infrastructure</option>
           <option value="acquisition_vacant_for_construction">Acquisition of vacant land for future construction</option>
           <option value="demolition">Demolition</option>
-          <option value="change_of_use">Change of land use (e.g., commercial \u2192 residential)</option>
+          <option value="change_of_use">Change of land use (e.g., commercial &rarr; residential)</option>
         </optgroup>
         <optgroup label="Other">
-          <option value="not_sure">Not sure \u2014 let's talk</option>
+          <option value="not_sure">Not sure &mdash; let's talk</option>
         </optgroup>
       </select>
     </div>
@@ -358,18 +358,18 @@
       <div class="field">
         <label>What type of structure? <span class="req">*</span></label>
         <div class="radio-group">
-          <label><input type="radio" name="property_type" value="sf"> <span>Single-family / 1\u20134 unit residential</span></label>
+          <label><input type="radio" name="property_type" value="sf"> <span>Single-family / 1&ndash;4 unit residential</span></label>
           <label><input type="radio" name="property_type" value="other"> <span>Multifamily, commercial, or other</span></label>
         </div>
       </div>
     </div>
 
     <div class="field">
-      <label>Project location <span class="opt">(optional \u2014 helps with travel-zone pricing)</span></label>
+      <label>Project location <span class="opt">(optional &mdash; helps with travel-zone pricing)</span></label>
       <input type="text" name="project_location" placeholder="City, State">
     </div>
 
-    <input type="hidden" name="_subject" id="hidden_subject" value="HUD ER Quote Request \u2014 new submission">
+    <input type="hidden" name="_subject" id="hidden_subject" value="HUD ER Quote Request &mdash; new submission">
     <input type="hidden" name="determined_level" id="hidden_level">
     <input type="hidden" name="determined_cite" id="hidden_cite">
     <input type="hidden" name="quote_breakdown" id="hidden_breakdown">
@@ -401,7 +401,7 @@
     <p class="explain" id="r-explain"></p>
 
     <div class="quote-box" id="r-quote-box">
-      <p class="price-label">Project quote \u2014 fixed fee</p>
+      <p class="price-label">Project quote &mdash; fixed fee</p>
       <ul class="components" id="r-components"></ul>
       <div class="total-row" id="r-total-row">
         <span class="total-label">Total</span>
@@ -420,7 +420,7 @@
   </div>
 
   <p class="footer-note">
-    AZ-RI Consultants \u00B7 HUD Environmental Reviews &amp; Transactional Due Diligence \u00B7
+    AZ-RI Consultants &middot; HUD Environmental Reviews &amp; Transactional Due Diligence &middot;
     <a href="https://az-ri.com">az-ri.com</a>
   </p>
 </div>
