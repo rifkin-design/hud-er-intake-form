@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUD Part 58 Environmental Review &mdash; Instant Determination &amp; Quote | AZ-RI Consultants</title>
+<meta name="description" content="Instantly determine the level of HUD Part 58 environmental review your project requires. Get a project-specific fixed-fee quote from AZ-RI Consultants.">
+
+<!--
+  =============================================================================
+  HUD PART 58 ENVIRONMENTAL REVIEW INTAKE FORM (lean / marketing version)
+  AZ-RI Consultants &mdash; az-ri.com
+  =============================================================================
+  CONFIGURATION (search for "CONFIGURATION" inside <script>):
+    1. FORMSPREE_ENDPOINT \u2014 your Formspree form URL (required)
+    2. VERIFY_API_URL     \u2014 Cloudflare Worker URL for OTP email verification.
+                            Leave empty to skip OTP (recommended for launch).
+    3. COMPETITOR_DOMAINS \u2014 domains to silently block from getting pricing
+    4. PRICES             \u2014 the buildQuote() function holds the full pricing
+                            structure (review fee + required ESA component)
+  =============================================================================
+-->
+
+<style>
+  :root {
+    --azri-olive: #6B7F3F;
+    --azri-olive-dark: #56672F;
+    --azri-olive-light: #E8ECDC;
+    --azri-charcoal: #2A2A2A;
+    --azri-grey: #6B6B6B;
+    --azri-grey-light: #DDDDDD;
+    --azri-bg: #FAFAF7;
+    --azri-white: #FFFFFF;
+    --azri-error: #B23A3A;
+    --azri-success: #3A6B3A;
+    --radius: 4px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.10);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--azri-charcoal);
+    background: var(--azri-bg);
+    line-height: 1.5;
+    font-size: 16px;
+  }
+  .er-wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  .er-header h1 { color: var(--azri-olive-dark); font-size: 28px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .er-header p.lede { color: var(--azri-grey); font-size: 17px; margin: 0 0 24px; }
+
+  form {
+    background: var(--azri-white);
+    border: 1px solid var(--azri-grey-light);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .field { margin-bottom: 18px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+  label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; color: var(--azri-charcoal); }
+  label .req { color: var(--azri-error); margin-left: 2px; }
+  label .opt { color: var(--azri-grey); font-weight: 400; font-size: 12px; margin-left: 4px; }
+
+  input[type=text], input[type=email], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--azri-grey-light);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: inherit;
+    background: var(--azri-white);
+    transition: border-color 120ms;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--azri-olive);
+    box-shadow: 0 0 0 3px rgba(107,127,63,0.15);
+  }
+
+  .help { font-size: 13px; color: var(--azri-grey); margin-top: 4px; }
+  .err { font-size: 13px; color: var(--azri-error); margin-top: 4px; display: none; }
+  .err.show { display: block; }
+
+  .radio-group { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+  .radio-group label {
+    font-weight: 400; margin: 0; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border: 1px solid var(--azri-grey-light);
+    border-radius: var(--radius); transition: all 120ms;
+  }
+  .radio-group label:hover { border-color: var(--azri-olive); }
+  .radio-group input[type=radio] { margin: 0; }
+
+  .hp { position: absolute; left: -9999px; top: -9999px; height: 0; width: 0; overflow: hidden; }
+
+  button.btn {
+    background: var(--azri-olive);
+    color: var(--azri-white);
+    border: none;
+    padding: 13px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 120ms;
+    font-family: inherit;
+    width: 100%;
+  }
+  button.btn:hover:not(:disabled) { background: var(--azri-olive-dark); }
+  button.btn:disabled { background: var(--azri-grey-light); color: var(--azri-grey); cursor: not-allowed; }
+  button.btn-secondary {
+    background: transparent;
+    color: var(--azri-olive-dark);
+    border: 1px solid var(--azri-olive);
+    width: auto;
+    padding: 9px 18px;
+    font-size: 14px;
+  }
+  button.btn-secondary:hover:not(:disabled) { background: var(--azri-olive-light); color: var(--azri-olive-dark); }
+
+  /* OTP */
+  #otp-step { display: none; margin-top: 20px; padding: 20px; background: var(--azri-olive-light); border-radius: var(--radius); border-left: 4px solid var(--azri-olive); }
+  #otp-step.show { display: block; }
+  #otp-step h3 { margin: 0 0 6px; color: var(--azri-olive-dark); font-size: 17px; }
+  #otp-step p { margin: 0 0 12px; font-size: 14px; }
+  #otp-input { font-size: 24px; letter-spacing: 0.4em; text-align: center; font-family: "SF Mono", Menlo, Consolas, monospace; padding: 12px; }
+  .otp-actions { display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .otp-actions .resend { font-size: 13px; color: var(--azri-grey); }
+  .otp-actions .resend a { color: var(--azri-olive-dark); text-decoration: underline; cursor: pointer; }
+  .otp-actions .resend a.disabled { color: var(--azri-grey); cursor: not-allowed; text-decoration: none; }
+
+  /* Result panel */
+  #result-panel {
+    display: none;
+    background: var(--azri-white);
+    border: 2px solid var(--azri-olive);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+  }
+  #result-panel h2 { color: var(--azri-olive-dark); margin: 0 0 14px; font-size: 22px; font-weight: 600; }
+  #result-panel .level-label {
+    margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--azri-olive-dark); font-weight: 700;
+  }
+  #result-panel .level-big {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--azri-charcoal);
+    margin: 4px 0 4px;
+    letter-spacing: -0.02em;
+  }
+  #result-panel .cite-big {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: var(--azri-olive-dark);
+    margin: 0 0 14px;
+    font-size: 14px;
+  }
+  #result-panel .explain { color: var(--azri-charcoal); margin: 0 0 20px; font-size: 15px; }
+
+  /* Itemized quote */
+  .quote-box {
+    background: var(--azri-olive-light);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin: 16px 0 18px;
+  }
+  .quote-box .price-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--azri-olive-dark); font-weight: 700; margin: 0 0 14px;
+  }
+  .components { list-style: none; padding: 0; margin: 0; }
+  .components li {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(107,127,63,0.25);
+  }
+  .components li:last-child { border-bottom: none; }
+  .components .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .components .name { font-weight: 600; color: var(--azri-charcoal); }
+  .components .amount { font-weight: 700; color: var(--azri-charcoal); white-space: nowrap; font-size: 16px; }
+  .components .note { display: block; font-size: 13px; color: var(--azri-grey); margin-top: 4px; line-height: 1.4; }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 16px 0 4px;
+    margin-top: 6px;
+    border-top: 2px solid var(--azri-olive);
+  }
+  .total-label { font-weight: 600; font-size: 16px; color: var(--azri-charcoal); }
+  .total-amount {
+    font-weight: 700; color: var(--azri-olive-dark); font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+
+  .price-disclaimer {
+    font-size: 13px;
+    color: var(--azri-grey);
+    font-style: italic;
+    margin: 12px 0 0;
+    line-height: 1.4;
+  }
+
+  .cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+  .cta-row.single { grid-template-columns: 1fr; max-width: 320px; margin-left: auto; margin-right: auto; }
+  @media (max-width: 540px) { .cta-row { grid-template-columns: 1fr; } }
+  .cta-row a {
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    background: var(--azri-olive);
+    color: var(--azri-white);
+    padding: 13px 18px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    transition: background 120ms;
+  }
+  .cta-row a:hover { background: var(--azri-olive-dark); }
+  .cta-row a.btn-outline {
+    background: transparent;
+    color: var(--azri-olive-dark);
+    border: 1px solid var(--azri-olive);
+  }
+  .cta-row a.btn-outline:hover { background: var(--azri-olive-light); }
+
+  .footer-note { margin-top: 32px; text-align: center; font-size: 13px; color: var(--azri-grey); }
+  .footer-note a { color: var(--azri-olive-dark); }
+</style>
+</head>
+<body>
+
+<div class="er-wrap">
+
+  <div class="er-header">
+    <h1>HUD Part 58 Environmental Review \u2014 Instant Quote</h1>
+    <p class="lede">Answer a few quick questions about your HUD-funded project. We'll determine the required level of review under 24 CFR Part 58 and give you a fixed-fee quote on the spot.</p>
+  </div>
+
+  <form id="hud-er-form" action="https://formspree.io/f/mvzlanjd" method="POST" novalidate>
+
+    <!-- Honeypot -->
+    <div class="hp" aria-hidden="true">
+      <label>Leave blank if you are human:</label>
+      <input type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Your name <span class="req">*</span></label>
+        <input type="text" name="contact_name" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Organization <span class="req">*</span></label>
+        <input type="text" name="contact_org" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Business email <span class="req">*</span></label>
+      <input type="email" name="contact_email" id="contact_email" required autocomplete="email">
+      <div class="help">Please use your organization's email (Gmail, Yahoo, Outlook, etc. are not accepted).</div>
+      <div class="err" id="email-err"></div>
+    </div>
+
+    <div class="field">
+      <label>HUD funding program <span class="req">*</span></label>
+      <select name="funding_program" required>
+        <option value="">\u2014 select program \u2014</option>
+        <optgroup label="Formula / entitlement programs">
+          <option>CDBG \u2014 Community Development Block Grant</option>
+          <option>HOME \u2014 HOME Investment Partnerships</option>
+          <option>ESG \u2014 Emergency Solutions Grants</option>
+          <option>HOPWA \u2014 Housing Opportunities for Persons With AIDS</option>
+          <option>HTF \u2014 Housing Trust Fund</option>
+        </optgroup>
+        <optgroup label="Competitive / special programs">
+          <option>NSP \u2014 Neighborhood Stabilization Program</option>
+          <option>CPF \u2014 Community Project Funding (earmarks)</option>
+          <option>CoC \u2014 Continuum of Care</option>
+          <option>Section 108 Loan Guarantee</option>
+          <option>Section 4 \u2014 Capacity Building</option>
+          <option>Choice Neighborhoods</option>
+        </optgroup>
+        <optgroup label="Tribal programs">
+          <option>ICDBG \u2014 Indian CDBG</option>
+          <option>IHBG \u2014 Indian Housing Block Grant</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option>Multiple HUD programs</option>
+          <option>Other / not sure</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>What HUD-funded activity do you need a review for? <span class="req">*</span></label>
+      <select name="activity_category" id="activity_category" required>
+        <option value="">\u2014 select the closest match \u2014</option>
+        <optgroup label="Services &amp; administrative">
+          <option value="planning_admin">Planning, administration, technical assistance, training, design (no construction)</option>
+          <option value="tbra">Tenant-Based Rental Assistance (TBRA)</option>
+          <option value="supportive_services">Supportive services (case management, employment, health, etc.)</option>
+          <option value="operating_costs">Operating costs / utilities / maintenance / staff salaries</option>
+          <option value="econ_dev_no_construction">Economic development \u2014 jobs/training (no construction)</option>
+          <option value="homebuyer_existing">Homebuyer assistance for existing units (DPA, closing costs)</option>
+          <option value="predev_costs">Affordable housing pre-development costs</option>
+        </optgroup>
+        <optgroup label="Acquisition / rehab">
+          <option value="acquisition_existing_no_change">Acquisition of an existing structure (no rehab, no use change)</option>
+          <option value="rehab_residential_1to4">Rehab of an existing 1\u20134 unit residential building</option>
+          <option value="rehab_residential_5plus">Rehab of an existing multifamily building (5+ units)</option>
+          <option value="rehab_nonresidential">Rehab of an existing non-residential building</option>
+          <option value="rehab_public_facility">Rehab/improvement of an existing public facility (water, sewer, streets, community building)</option>
+        </optgroup>
+        <optgroup label="New construction or significant change">
+          <option value="new_construction_sf">New construction \u2014 single-family</option>
+          <option value="new_construction_mf">New construction \u2014 multifamily</option>
+          <option value="new_construction_public">New construction \u2014 public facility / infrastructure</option>
+          <option value="acquisition_vacant_for_construction">Acquisition of vacant land for future construction</option>
+          <option value="demolition">Demolition</option>
+          <option value="change_of_use">Change of land use (e.g., commercial &rarr; residential)</option>
+        </optgroup>
+        <optgroup label="Other">
+          <option value="not_sure">Not sure \u2014 let's talk</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div id="rehab-questions" style="display:none;">
+      <div class="field">
+        <label>Will the project change land use, increase the building footprint by more than 20%, or change the number of units by more than 20%? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label><input type="radio" name="exceeds_thresholds" value="no"> <span>No / minor change</span></label>
+          <label><input type="radio" name="exceeds_thresholds" value="yes"> <span>Yes</span></label>
+          <label><input type="radio" name="exceeds_thresholds" value="unknown"> <span>Not sure</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div id="public-facility-question" style="display:none;">
+      <div class="field">
+        <label>Will the project increase the capacity of the facility by more than 20%, or change land use? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label><input type="radio" name="exceeds_capacity" value="no"> <span>No / minor change</span></label>
+          <label><input type="radio" name="exceeds_capacity" value="yes"> <span>Yes</span></label>
+          <label><input type="radio" name="exceeds_capacity" value="unknown"> <span>Not sure</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acquisition: ask if SF or commercial so we price ESA correctly -->
+    <div id="acquisition-property-type" style="display:none;">
+      <div class="field">
+        <label>What type of structure? <span class="req">*</span></label>
+        <div class="radio-group">
+          <label><input type="radio" name="property_type" value="sf"> <span>Single-family / 1\u20134 unit residential</span></label>
+          <label><input type="radio" name="property_type" value="other"> <span>Multifamily, commercial, or other</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Project location <span class="opt">(optional \u2014 helps with travel-zone pricing)</span></label>
+      <input type="text" name="project_location" placeholder="City, State">
+    </div>
+
+    <input type="hidden" name="_subject" id="hidden_subject" value="HUD ER Quote Request \u2014 new submission">
+    <input type="hidden" name="determined_level" id="hidden_level">
+    <input type="hidden" name="determined_cite" id="hidden_cite">
+    <input type="hidden" name="quote_breakdown" id="hidden_breakdown">
+    <input type="hidden" name="quote_total" id="hidden_total">
+    <input type="hidden" name="email" id="hidden_email">
+
+    <button type="submit" class="btn" id="submit-btn">Get my fixed-fee quote</button>
+
+    <div id="otp-step">
+      <h3>Confirm your email</h3>
+      <p>We sent a 6-digit code to <strong id="otp-email-display"></strong>. Enter it below to view your quote.</p>
+      <input type="text" id="otp-input" inputmode="numeric" maxlength="6" placeholder="------" autocomplete="one-time-code">
+      <div class="otp-actions">
+        <button type="button" class="btn btn-secondary" id="otp-verify-btn">Verify &amp; show quote</button>
+        <span class="resend">Didn't get it? <a id="otp-resend" class="disabled">Resend (30s)</a></span>
+      </div>
+      <div class="err" id="otp-err" style="margin-top:10px;"></div>
+    </div>
+
+  </form>
+
+  <!-- Result panel -->
+  <div id="result-panel" aria-live="polite">
+    <h2>Thanks, <span id="r-name"></span>. Here's your determination:</h2>
+
+    <p class="level-label">Required Review Level</p>
+    <p class="level-big" id="r-level"></p>
+    <p class="cite-big" id="r-cite"></p>
+    <p class="explain" id="r-explain"></p>
+
+    <div class="quote-box" id="r-quote-box">
+      <p class="price-label">Project quote \u2014 fixed fee</p>
+      <ul class="components" id="r-components"></ul>
+      <div class="total-row" id="r-total-row">
+        <span class="total-label">Total</span>
+        <span class="total-amount" id="r-total"></span>
+      </div>
+      <p class="price-disclaimer">
+        This is a project-specific quote based on the scope you described. It is not a published rate and may be revised once we confirm the full scope.
+      </p>
+    </div>
+
+    <p style="font-size:14px; margin: 16px 0 8px;">A copy has been emailed to <strong id="r-email"></strong>. Have questions or ready to move forward?</p>
+
+    <div class="cta-row single">
+      <a id="cta-email" href="mailto:info@az-ri.com">Email us</a>
+    </div>
+  </div>
+
+  <p class="footer-note">
+    AZ-RI Consultants &middot; HUD Environmental Reviews &amp; Transactional Due Diligence &middot;
+    <a href="https://az-ri.com">az-ri.com</a>
+  </p>
+</div>
+
+<script>
+/* =============================================================================
+   CONFIGURATION \u2014 edit these
+   ========================================================================== */
+
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mvzlanjd";
+const VERIFY_API_URL     = ""; // empty = no OTP (recommended for marketing-tool launch)
+// Pulled from the AZ-RI Rolling Target List (Peer Environmental Firms +
+// incumbent consultants documented on competing HUD ERRs). Domains marked
+// with [✓] were confirmed in the CRM; others are inferred from public
+// records and should be verified \u2014 but blocking them at the email gate is
+// safe (a competitor employee would never legitimately use this form).
+const COMPETITOR_DOMAINS = [
+  'aec-env.com',                       // [✓] Advantage Environmental Consultants (AEC) \u2014 PG County DHCD incumbent
+  'mandl.net',                         // [✓] Mullin & Lonergan Associates (M&L) \u2014 Wilmington DE incumbent
+  'geosyntec.com',                     // Geosyntec \u2014 Engineering Peer (subs work, but block their staff from pricing)
+  'd3g.com',                           // Dominion Due Diligence Group \u2014 bundled-CNA national firm (Capital One, ColumbiaNational, Lument)
+  'aeiconsultants.com',                // AEI Consultants \u2014 bundled-CNA national firm (Lument)
+  'ebiconsulting.com',                 // EBI Consulting \u2014 used by Time Group on 1111 Light St
+  'partneresi.com',                    // Partner Engineering and Science / Partner Assessment Corp (Merchants Capital, HVPG)
+  'urbangreenenvironmental.com',       // Urban Green Environmental \u2014 Denise Sullivan / David Sena (multiple Baltimore City Part 58 deals)
+  'tenbearsenviro.com',                // Ten Bears Environmental Associates \u2014 John Sunkler (Sussex County DE incumbent)
+  'repsg.com',                         // REPSG Inc. \u2014 Ellie Johnston (SA+A / Wilmington Scattered Sites)
+  'ehc.us',                            // Environmental Health Consultants (Emily Dyson) \u2014 used by NHP Foundation
+  // Add more as you encounter them \u2014 and let me know if you spot any new
+  // incumbent consultants in HEROS that should be added.
+];
+// (No booking URL \u2014 single "Email us" CTA points at info@az-ri.com)
+
+const FREE_EMAIL_DOMAINS = [
+  'gmail.com','googlemail.com','yahoo.com','ymail.com','rocketmail.com',
+  'hotmail.com','outlook.com','live.com','msn.com','aol.com',
+  'icloud.com','me.com','mac.com','protonmail.com','proton.me','pm.me',
+  'tutanota.com','tuta.io','gmx.com','gmx.us','mail.com','yandex.com',
+  'zoho.com','fastmail.com','fastmail.fm','hey.com','duck.com',
+  'inbox.com','mail.ru','qq.com','163.com','126.com'
+];
+
+/* =============================================================================
+   PRICING \u2014 single source of truth
+   Built from the 2025 pricing sheet:
+     CENST $500 | CEST $1,750 | CEST+EA $3,500
+     Phase I ESA $2,800 | Limited ESA $1,250
+   The Phase I or Limited ESA is REQUIRED to address the contamination
+   section of any CEST or EA review (HUD compliance).
+   ========================================================================== */
+
+const PRICE_REVIEW = {
+  CENST: 500,
+  CEST:  1750,
+  EA:    3500
+};
+const PRICE_PHASE_I = 2300;
+const PRICE_LIMITED_ESA = 1250;
+
+function fmt$(n) { return "$" + n.toLocaleString("en-US"); }
+
+// Single-family eligibility for Limited ESA (HUD definition: 1\u20134 units residential)
+function isSingleFamily(d) {
+  if (['rehab_residential_1to4','new_construction_sf','homebuyer_existing'].includes(d.activity_category)) return true;
+  if (d.activity_category === 'acquisition_existing_no_change' && d.property_type === 'sf') return true;
+  return false;
+}
+
+function buildQuote(det, d) {
+  if (det.key === 'EXEMPT') {
+    return { components: [], total: 0, totalDisplay: "No charge", note: "Exempt activities require no environmental review work." };
+  }
+  if (det.key === 'CONSULT') {
+    return { components: [], total: null, totalDisplay: "Custom \u2014 let's talk", note: "Your project profile needs a brief consultation before we can finalize a quote." };
+  }
+  if (det.key === 'CENST') {
+    return {
+      components: [
+        { name: "HUD Environmental Review (CENST)", amount: PRICE_REVIEW.CENST, amountDisplay: fmt$(PRICE_REVIEW.CENST) }
+      ],
+      total: PRICE_REVIEW.CENST,
+      totalDisplay: fmt$(PRICE_REVIEW.CENST)
+    };
+  }
+
+  // CEST or EA \u2014 review fee + REQUIRED ESA component
+  const reviewFee   = det.key === 'EA' ? PRICE_REVIEW.EA : PRICE_REVIEW.CEST;
+  const reviewName  = det.key === 'EA' ? "HUD Environmental Review with EA (NEPA)" : "HUD Environmental Review (CEST)";
+  const reviewNote  = det.key === 'EA'
+    ? "Includes related-laws compliance and EA documentation."
+    : "Includes Tier 1 area-wide review where applicable.";
+
+  const sf = isSingleFamily(d);
+  let esaComponent;
+  if (sf) {
+    esaComponent = {
+      name: "Limited ESA",
+      amount: PRICE_LIMITED_ESA,
+      amountDisplay: fmt$(PRICE_LIMITED_ESA),
+      note: "Required to address the contamination section. HUD single-family compliant. A Phase I ESA (starting at $2,300, ASTM E1527-21) is available as an alternative if your lender or another party requires it."
+    };
+  } else {
+    esaComponent = {
+      name: "Phase I ESA (ASTM E1527-21)",
+      amount: PRICE_PHASE_I,
+      amountDisplay: fmt$(PRICE_PHASE_I),
+      note: "Required to address the contamination section. May range $2,300\u2013$2,800 based on size and complexity of the property."
+    };
+  }
+
+  const total = reviewFee + esaComponent.amount;
+  return {
+    components: [
+      { name: reviewName, amount: reviewFee, amountDisplay: fmt$(reviewFee), note: reviewNote },
+      esaComponent
+    ],
+    total,
+    totalDisplay: fmt$(total)
+  };
+}
+
+/* =============================================================================
+   DETERMINATION LOGIC \u2014 24 CFR Part 58
+   ========================================================================== */
+
+function determineLevel(d) {
+  const a = d.activity_category;
+  const exceeds  = d.exceeds_thresholds === 'yes' || d.exceeds_thresholds === 'unknown';
+  const exceedsC = d.exceeds_capacity   === 'yes' || d.exceeds_capacity   === 'unknown';
+
+  if (a === 'planning_admin') {
+    return { level: "EXEMPT", cite: "24 CFR \u00A758.34", explain: "Planning, administrative, and design-only activities that do not commit funds to a specific project are exempt from environmental review.", key: "EXEMPT" };
+  }
+
+  const censt = {
+    tbra:                    { sub: "(b)(1)", desc: "Tenant-Based Rental Assistance" },
+    supportive_services:     { sub: "(b)(2)", desc: "Supportive services" },
+    operating_costs:         { sub: "(b)(3)", desc: "Operating costs" },
+    econ_dev_no_construction:{ sub: "(b)(4)", desc: "Economic development without construction" },
+    homebuyer_existing:      { sub: "(b)(5)", desc: "Homebuyer assistance for existing units" },
+    predev_costs:            { sub: "(b)(6)", desc: "Affordable housing pre-development costs" }
+  };
+  if (censt[a]) {
+    return {
+      level: "CENST",
+      cite: `24 CFR \u00A758.35${censt[a].sub}`,
+      explain: `${censt[a].desc} is categorically excluded and not subject to \u00A758.5 \u2014 only \u00A758.6 statutory compliance applies.`,
+      key: "CENST"
+    };
+  }
+
+  if (a === 'acquisition_existing_no_change') {
+    return { level: "CEST", cite: "24 CFR \u00A758.35(a)(5)", explain: "Acquisition of an existing structure with no change of use is categorically excluded subject to \u00A758.5 \u2014 full related-laws review required.", key: "CEST" };
+  }
+  if (a === 'rehab_residential_1to4') {
+    return exceeds
+      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Rehab of 1\u20134 unit residential that exceeds the \u00A758.35(a)(3)(i) thresholds typically requires an Environmental Assessment.", key: "EA" }
+      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(3)(i)", explain: "Rehab of 1\u20134 unit residential within the \u00A758.35(a)(3)(i) thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
+  }
+  if (a === 'rehab_residential_5plus') {
+    return exceeds
+      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Multifamily rehab that exceeds the \u00A758.35(a)(3)(ii) thresholds typically requires an Environmental Assessment.", key: "EA" }
+      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(3)(ii)", explain: "Multifamily rehab within the \u00A758.35(a)(3)(ii) thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
+  }
+  if (a === 'rehab_nonresidential') {
+    return exceeds
+      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Non-residential rehab that exceeds \u00A758.35(a)(3) thresholds typically requires an EA.", key: "EA" }
+      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(3)(iii)", explain: "Rehab of an existing non-residential structure within thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
+  }
+  if (a === 'rehab_public_facility') {
+    return exceedsC
+      ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Public facility/improvement work exceeding \u00A758.35(a)(1) thresholds typically requires an EA.", key: "EA" }
+      : { level: "CEST", cite: "24 CFR \u00A758.35(a)(1)", explain: "Acquisition, repair, improvement, reconstruction, or rehab of an existing public facility within thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
+  }
+  if (['new_construction_sf','new_construction_mf','new_construction_public','acquisition_vacant_for_construction','demolition','change_of_use'].includes(a)) {
+    return { level: "EA", cite: "24 CFR \u00A758.36", explain: "New construction, demolition, or change-of-use projects typically require a full Environmental Assessment under NEPA.", key: "EA" };
+  }
+  return { level: "Consultation needed", cite: "24 CFR Part 58", explain: "Your project profile needs a brief consultation before we can finalize the level.", key: "CONSULT" };
+}
+
+/* =============================================================================
+   EMAIL VALIDATION
+   ========================================================================== */
+
+function validateBusinessEmail(email) {
+  if (!email || !email.includes('@')) return { ok: false, reason: "Please enter a valid email address." };
+  const domain = email.split('@')[1].toLowerCase().trim();
+  if (FREE_EMAIL_DOMAINS.includes(domain)) {
+    return { ok: false, reason: "Personal email providers are not accepted. Please use your organization's email." };
+  }
+  if (COMPETITOR_DOMAINS.map(d => d.toLowerCase()).includes(domain)) {
+    return { ok: false, reason: "We're unable to provide a quote to this email. Please contact us directly at info@az-ri.com." };
+  }
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domain)) {
+    return { ok: false, reason: "That email domain doesn't look valid." };
+  }
+  return { ok: true, domain };
+}
+
+/* =============================================================================
+   FORM HOOK-UP
+   ========================================================================== */
+
+const form        = document.getElementById('hud-er-form');
+const activitySel = document.getElementById('activity_category');
+const rehabBlock  = document.getElementById('rehab-questions');
+const pubFacBlock = document.getElementById('public-facility-question');
+const acqTypeBlock= document.getElementById('acquisition-property-type');
+const emailField  = document.getElementById('contact_email');
+const emailErr    = document.getElementById('email-err');
+const submitBtn   = document.getElementById('submit-btn');
+const resultPanel = document.getElementById('result-panel');
+const otpStep     = document.getElementById('otp-step');
+const otpInput    = document.getElementById('otp-input');
+const otpErr      = document.getElementById('otp-err');
+const otpVerifyBtn= document.getElementById('otp-verify-btn');
+const otpResend   = document.getElementById('otp-resend');
+const otpEmailDisp= document.getElementById('otp-email-display');
+
+form.action = FORMSPREE_ENDPOINT;
+
+let otpToken = null, otpEmail = null;
+let pendingDet = null, pendingQuote = null, pendingData = null;
+let resendTimer = null;
+
+function updateConditionals() {
+  const a = activitySel.value;
+  const rehabActivities = ['rehab_residential_1to4','rehab_residential_5plus','rehab_nonresidential'];
+  const pubFacility     = ['rehab_public_facility'];
+  rehabBlock.style.display   = rehabActivities.includes(a) ? '' : 'none';
+  pubFacBlock.style.display  = pubFacility.includes(a)     ? '' : 'none';
+  acqTypeBlock.style.display = a === 'acquisition_existing_no_change' ? '' : 'none';
+}
+activitySel.addEventListener('change', updateConditionals);
+
+emailField.addEventListener('blur', () => {
+  if (!emailField.value.trim()) return;
+  const v = validateBusinessEmail(emailField.value.trim());
+  if (!v.ok) {
+    emailErr.textContent = v.reason;
+    emailErr.classList.add('show');
+    emailField.style.borderColor = 'var(--azri-error)';
+  } else {
+    emailErr.classList.remove('show');
+    emailField.style.borderColor = '';
+  }
+});
+
+/* =============================================================================
+   SUBMISSION FLOW
+   ========================================================================== */
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const hp = form.querySelector('input[name="_gotcha"]');
+  if (hp && hp.value) return;
+
+  const emailVal = validateBusinessEmail(emailField.value.trim());
+  if (!emailVal.ok) {
+    emailErr.textContent = emailVal.reason;
+    emailErr.classList.add('show');
+    emailField.focus();
+    return;
+  }
+
+  const data = Object.fromEntries(new FormData(form).entries());
+  if (!data.activity_category) {
+    alert("Please select an activity in the dropdown.");
+    return;
+  }
+
+  const det   = determineLevel(data);
+  const quote = buildQuote(det, data);
+
+  pendingDet   = det;
+  pendingQuote = quote;
+  pendingData  = data;
+
+  if (!VERIFY_API_URL) return finalizeSubmit();
+
+  // OTP path
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Sending verification code&hellip;";
+  try {
+    const resp = await fetch(VERIFY_API_URL + "/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: emailField.value.trim() })
+    });
+    const json = await resp.json();
+    if (!resp.ok || !json.ok) throw new Error(json.error || "Failed to send code");
+    otpToken = json.token;
+    otpEmail = emailField.value.trim();
+    otpEmailDisp.textContent = otpEmail;
+    otpStep.classList.add('show');
+    otpInput.focus();
+    submitBtn.style.display = 'none';
+    startResendTimer();
+  } catch {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Get my fixed-fee quote";
+    alert("Could not send verification code. Please try again or email us at info@az-ri.com.");
+  }
+});
+
+otpVerifyBtn.addEventListener('click', async () => {
+  const code = otpInput.value.trim();
+  if (!/^\d{6}$/.test(code)) {
+    otpErr.textContent = "Please enter the 6-digit code.";
+    otpErr.classList.add('show');
+    return;
+  }
+  otpVerifyBtn.disabled = true;
+  otpVerifyBtn.textContent = "Verifying&hellip;";
+  try {
+    const resp = await fetch(VERIFY_API_URL + "/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: otpEmail, code, token: otpToken })
+    });
+    const json = await resp.json();
+    if (!resp.ok || !json.ok) throw new Error(json.error || "Invalid or expired code");
+    otpErr.classList.remove('show');
+    finalizeSubmit();
+  } catch (err) {
+    otpVerifyBtn.disabled = false;
+    otpVerifyBtn.textContent = "Verify & show quote";
+    otpErr.textContent = err.message || "Verification failed.";
+    otpErr.classList.add('show');
+  }
+});
+
+otpResend.addEventListener('click', async () => {
+  if (otpResend.classList.contains('disabled')) return;
+  try {
+    const resp = await fetch(VERIFY_API_URL + "/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: otpEmail })
+    });
+    const json = await resp.json();
+    if (resp.ok && json.ok) { otpToken = json.token; startResendTimer(); }
+  } catch {}
+});
+
+function startResendTimer() {
+  let s = 30;
+  otpResend.classList.add('disabled');
+  otpResend.textContent = `Resend (${s}s)`;
+  if (resendTimer) clearInterval(resendTimer);
+  resendTimer = setInterval(() => {
+    s--;
+    otpResend.textContent = `Resend (${s}s)`;
+    if (s <= 0) {
+      clearInterval(resendTimer);
+      otpResend.classList.remove('disabled');
+      otpResend.textContent = "Resend code";
+    }
+  }, 1000);
+}
+
+async function finalizeSubmit() {
+  const det = pendingDet, quote = pendingQuote, data = pendingData;
+
+  // Populate hidden fields for Formspree record
+  document.getElementById('hidden_level').value     = det.level;
+  document.getElementById('hidden_cite').value      = det.cite;
+  document.getElementById('hidden_breakdown').value = quote.components.map(c => `${c.name}: ${c.amountDisplay}`).join(' | ');
+  document.getElementById('hidden_total').value     = quote.totalDisplay;
+  document.getElementById('hidden_email').value     = emailField.value.trim();
+  document.getElementById('hidden_subject').value   = `HUD ER Quote \u2014 ${det.level} \u2014 ${data.contact_org || ''}`.trim();
+
+  const isDemo = FORMSPREE_ENDPOINT.includes("YOUR_FORMSPREE_ID");
+  if (isDemo) {
+    console.log("DEMO MODE \u2014 Formspree submission skipped.", { ...data, level: det.level, cite: det.cite, total: quote.totalDisplay });
+    return showResult(det, quote, data, true);
+  }
+
+  try {
+    const formData = new FormData(form);
+    const resp = await fetch(form.action, {
+      method: "POST", body: formData, headers: { "Accept": "application/json" }
+    });
+    if (!resp.ok) throw new Error("Submission failed");
+    showResult(det, quote, data, false);
+  } catch {
+    alert("There was a problem submitting. Please try again or email us at info@az-ri.com.");
+  }
+}
+
+function showResult(det, quote, data, isDemo) {
+  document.getElementById('r-name').textContent    = (data.contact_name || '').split(' ')[0] || 'there';
+  document.getElementById('r-level').textContent   = det.level;
+  document.getElementById('r-cite').textContent    = det.cite;
+  document.getElementById('r-explain').textContent = det.explain;
+  document.getElementById('r-email').textContent   = emailField.value.trim();
+
+  const ul = document.getElementById('r-components');
+  if (quote.components.length) {
+    ul.innerHTML = quote.components.map(c => `
+      <li>
+        <div class="row">
+          <span class="name">${c.name}</span>
+          <span class="amount">${c.amountDisplay}</span>
+        </div>
+        ${c.note ? `<span class="note">${c.note}</span>` : ''}
+      </li>
+    `).join('');
+    document.getElementById('r-total').textContent = quote.totalDisplay + (typeof quote.total === 'number' ? '' : '');
+    document.getElementById('r-total-row').style.display = '';
+  } else {
+    // No line items \u2014 exempt or consult
+    ul.innerHTML = `<li><span class="note">${quote.note || ''}</span></li>`;
+    document.getElementById('r-total').textContent = quote.totalDisplay;
+    if (quote.total === 0 || quote.total === null) {
+      document.getElementById('r-total-row').style.display = '';
+    }
+  }
+
+  if (isDemo) {
+    const banner = document.createElement('div');
+    banner.style.cssText = "background:#FFF8E1;border:1px solid #E6B800;padding:10px 14px;border-radius:4px;margin-bottom:16px;font-size:13px;color:#7A5A00;";
+    banner.innerHTML = "<strong>Demo mode.</strong> Formspree endpoint not configured \u2014 submission was not sent. Configure <code>FORMSPREE_ENDPOINT</code> to enable real submissions.";
+    resultPanel.insertBefore(banner, resultPanel.firstChild);
+  }
+
+  form.style.display = 'none';
+  resultPanel.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+updateConditionals();
+
+/* =============================================================================
+   AUTO-RESIZE WHEN EMBEDDED IN AN IFRAME (e.g., from WordPress)
+   Posts the document height to the parent so the iframe can match content
+   height with no scroll bar. Safe no-op when opened directly.
+   ========================================================================== */
+(function () {
+  if (window.parent === window) return; // not in an iframe
+  function postHeight() {
+    var h = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight
+    );
+    window.parent.postMessage({ type: 'azri-er-form-height', height: h }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  if (typeof ResizeObserver !== 'undefined') {
+    var ro = new ResizeObserver(postHeight);
+    ro.observe(document.body);
+  } else {
+    // Fallback: poll every 500ms
+    setInterval(postHeight, 500);
+  }
+})();
+</script>
+</body>
+</html>
