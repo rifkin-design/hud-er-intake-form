@@ -1006,7 +1006,7 @@ function generatePDFBlob(det, quote, data) {
             margin: 0,
             filename: 'HUD-ER-Determination.pdf',
             image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 850 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 816, width: 816 },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
           };
@@ -1120,165 +1120,227 @@ function generatePrintableHTML(det, quote, data) {
   const factors = getApplicableFactors(det.key);
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const activityLabel = getActivityLabel(data.activity_category);
+  const firstName = (data.contact_name || '').split(' ')[0] || 'there';
   const escapeHTML = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   })[c]);
 
-  const projectInfoRows = [
-    ['Prepared for', `${escapeHTML(data.contact_name)}${data.contact_org ? ' \u2014 ' + escapeHTML(data.contact_org) : ''}`],
-    ['HUD funding program', escapeHTML(data.funding_program) || '\u2014'],
-    ['Activity', escapeHTML(activityLabel)],
-    ['Project location', escapeHTML(data.project_location) || '\u2014']
-  ].map(([k,v]) => `<tr><td class="lbl">${k}</td><td>${v}</td></tr>`).join('');
-
+  // Itemized quote rows
   const quoteRows = quote.components.length
     ? quote.components.map(c => `
-        <tr>
-          <td>
-            <div><strong>${escapeHTML(c.name)}</strong></div>
-            ${c.note ? `<div class="muted">${escapeHTML(c.note)}</div>` : ''}
-          </td>
-          <td class="amt">${escapeHTML(c.amountDisplay)}</td>
-        </tr>`).join('') + `
-        <tr class="total">
-          <td><strong>Total</strong></td>
-          <td class="amt"><strong>${escapeHTML(quote.totalDisplay)}</strong></td>
-        </tr>`
-    : `<tr><td colspan="2">${escapeHTML(quote.totalDisplay)}</td></tr>`;
+        <li class="component">
+          <div class="row"><span class="name">${escapeHTML(c.name)}</span><span class="amount">${escapeHTML(c.amountDisplay)}</span></div>
+          ${c.note ? `<div class="note">${escapeHTML(c.note)}</div>` : ''}
+        </li>`).join('')
+    : `<li class="component"><div class="row"><span class="note">${escapeHTML(quote.note || '')}</span></div></li>`;
 
-  const checklistHTML = factors.length ? `
-    <h2>Compliance factors required for your review</h2>
-    <p class="muted" style="margin:0 0 12px;">A ${det.level} review covers each item below. AZ-RI handles all of them as part of the fixed-fee scope.</p>
-    ${factors.map(section => `
-      <h3>${escapeHTML(section.title)}</h3>
-      <p class="muted" style="margin:0 0 8px;">${escapeHTML(section.note)}</p>
-      <table class="checklist">
-        <thead>
-          <tr><th style="width:30%;">Compliance factor</th><th style="width:8%; text-align:center;">Required</th><th>What's involved</th></tr>
-        </thead>
-        <tbody>
-          ${section.items.map(it => `
-            <tr>
-              <td><strong>${escapeHTML(it.name)}</strong></td>
-              <td class="check">\u2714</td>
-              <td>${escapeHTML(it.desc)}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    `).join('')}
-  ` : '';
+  // Compliance checklist - same layout as on-screen
+  const checklistHTML = factors.length ? factors.map(section => `
+    <div class="checklist-section">
+      <p class="section-title">${escapeHTML(section.title)}</p>
+      <p class="section-note">${escapeHTML(section.note)}</p>
+      <ul class="check-grid">
+        ${section.items.map(it => `<li>${escapeHTML(it.name)}</li>`).join('')}
+      </ul>
+    </div>`).join('') : '';
+
+  const totalCount = factors.reduce((n, f) => n + f.items.length, 0);
+  const checklistIntro = factors.length
+    ? `Your <strong>${escapeHTML(det.level)}</strong> review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the fixed-fee scope.`
+    : '';
+
+  const projectSummary = [
+    data.contact_org,
+    activityLabel,
+    data.funding_program,
+    data.project_location
+  ].filter(Boolean).map(escapeHTML).join(' &middot; ');
+
+  // SVG logo - AZ-RI olive-green wordmark with small house roof between A/Z and R/I
+  const logoSVG = `
+    <svg viewBox="0 0 240 78" xmlns="http://www.w3.org/2000/svg" style="width:140px;height:auto;display:block;">
+      <text x="0" y="58" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="62" fill="#6B7F3F" letter-spacing="-2">AZ</text>
+      <polygon points="76,18 92,18 84,8" fill="#6B7F3F"/>
+      <line x1="76" y1="50" x2="92" y2="50" stroke="#6B7F3F" stroke-width="3"/>
+      <text x="128" y="58" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="62" fill="#6B7F3F" letter-spacing="-2">RI</text>
+      <text x="0" y="74" font-family="Helvetica, Arial, sans-serif" font-weight="500" font-size="8" fill="#2A2A2A" letter-spacing="3">CONSULTANTS</text>
+    </svg>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HUD ER Determination \u2014 ${escapeHTML(data.contact_org || 'AZ-RI Consultants')}</title>
+<title>HUD ER Determination - ${escapeHTML(data.contact_org || 'AZ-RI Consultants')}</title>
 <style>
-  @page { size: letter; margin: 0.6in; }
+  @page { size: letter; margin: 0; }
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    color: #2A2A2A; line-height: 1.45; font-size: 12px;
-    margin: 0; padding: 24px;
+    font-family: Helvetica, Arial, sans-serif;
+    color: #2A2A2A; background: #FAFAF7;
+    line-height: 1.45;
+    font-size: 11px;
+    width: 8.5in;
+    padding: 0.5in 0.6in;
   }
-  .header { border-bottom: 3px solid #6B7F3F; padding-bottom: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline; }
-  .header .brand { font-size: 26px; font-weight: 800; color: #6B7F3F; letter-spacing: 0.04em; }
-  .header .brand small { font-size: 10px; font-weight: 400; color: #6B6B6B; letter-spacing: 0; display: block; margin-top: 2px; }
-  .header .date { font-size: 11px; color: #6B6B6B; }
-  h1 { color: #56672F; font-size: 18px; margin: 4px 0 12px; }
-  h2 { color: #56672F; font-size: 14px; margin: 22px 0 6px; border-bottom: 1px solid #DDD; padding-bottom: 3px; }
-  h3 { color: #2A2A2A; font-size: 12px; margin: 14px 0 2px; }
-  .muted { color: #6B6B6B; font-size: 11px; font-style: italic; }
-  table { width: 100%; border-collapse: collapse; }
-  table.info td { padding: 5px 8px; border-bottom: 1px solid #EEE; vertical-align: top; }
-  table.info td.lbl { width: 30%; color: #6B6B6B; font-weight: 600; }
-  table.quote td { padding: 8px; border-bottom: 1px solid #DDD; vertical-align: top; }
-  table.quote tr.total td { border-top: 2px solid #6B7F3F; border-bottom: none; padding-top: 10px; font-size: 14px; }
-  table.quote td.amt { text-align: right; white-space: nowrap; }
-  table.checklist th { background: #6B7F3F; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; font-weight: 700; }
-  table.checklist td { padding: 6px 8px; border-bottom: 1px solid #E5E5E5; vertical-align: top; font-size: 11px; }
-  table.checklist td.check { text-align: center; color: #6B7F3F; font-weight: 700; font-size: 14px; }
-  .level-callout { background: #E8ECDC; border-left: 4px solid #6B7F3F; padding: 12px 16px; border-radius: 4px; margin: 12px 0 16px; }
-  .level-callout .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #56672F; font-weight: 700; }
-  .level-callout .lvl { font-size: 24px; font-weight: 800; color: #2A2A2A; margin: 4px 0 2px; }
-  .level-callout .cite { font-family: Menlo, Consolas, monospace; color: #56672F; font-size: 11px; margin-bottom: 6px; }
-  .level-callout p { margin: 0; font-size: 11px; }
-  .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #DDD; font-size: 10px; color: #6B6B6B; text-align: center; }
-  .footer strong { color: #56672F; }
-  @media print {
-    body { padding: 0; }
-    .checklist-section { page-break-inside: avoid; }
-    h2 { page-break-after: avoid; }
+  .doc-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 3px solid #6B7F3F;
+    padding-bottom: 10px; margin-bottom: 18px;
   }
+  .head-right { text-align: right; font-size: 10px; color: #555; line-height: 1.5; }
+  .head-right .tag { color: #6B7F3F; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 9px; }
+  .head-right a { color: #56672F; text-decoration: none; font-weight: 600; }
+
+  h1 { color: #56672F; font-size: 18px; margin: 0 0 4px; font-weight: 700; letter-spacing: -0.01em; }
+  h1 .lede { display: block; color: #6B6B6B; font-size: 11px; font-weight: 400; margin-top: 4px; }
+  .project-line { font-size: 11px; color: #555; margin: 8px 0 14px; }
+
+  /* Determination block */
+  .determination { margin: 14px 0 14px; }
+  .determination .label-line {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #56672F; font-weight: 700; margin: 0 0 2px;
+  }
+  .determination .level-big {
+    font-size: 30px; font-weight: 800; color: #2A2A2A;
+    margin: 0; letter-spacing: -0.02em; line-height: 1.05;
+  }
+  .determination .cite-big {
+    font-family: 'Menlo', 'Courier New', monospace; color: #56672F;
+    font-size: 12px; margin: 4px 0 8px;
+  }
+  .determination .explain { color: #2A2A2A; margin: 6px 0 0; font-size: 11px; }
+
+  /* Quote box - olive panel matching on-screen */
+  .quote-box {
+    background: #E8ECDC; border-radius: 4px;
+    padding: 16px 20px; margin: 14px 0;
+  }
+  .quote-box .price-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #56672F; font-weight: 700; margin: 0 0 10px;
+  }
+  ul.components { list-style: none; padding: 0; margin: 0; }
+  ul.components li.component {
+    padding: 9px 0; border-bottom: 1px solid rgba(107,127,63,0.30);
+  }
+  ul.components li.component:last-child { border-bottom: none; }
+  ul.components .row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  ul.components .name { font-weight: 700; color: #2A2A2A; }
+  ul.components .amount { font-weight: 800; color: #2A2A2A; white-space: nowrap; font-size: 13px; }
+  ul.components .note { color: #6B6B6B; font-size: 10px; margin-top: 3px; line-height: 1.4; font-style: italic; }
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0 2px; margin-top: 4px; border-top: 2px solid #6B7F3F;
+  }
+  .total-row .total-label { font-weight: 700; font-size: 13px; color: #2A2A2A; }
+  .total-row .total-amount { font-weight: 800; color: #56672F; font-size: 22px; letter-spacing: -0.02em; }
+  .price-disclaimer { font-size: 10px; color: #6B6B6B; font-style: italic; margin: 10px 0 0; line-height: 1.4; }
+
+  /* Compliance checklist - matches on-screen */
+  .checklist-box {
+    background: #FFFFFF; border: 1px solid #D5DCC1;
+    border-radius: 4px; padding: 16px 20px; margin: 14px 0;
+  }
+  .checklist-box .checklist-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #56672F; font-weight: 700; margin: 0 0 4px;
+  }
+  .checklist-box .checklist-intro { font-size: 10.5px; color: #555; margin: 0 0 12px; line-height: 1.5; }
+  .checklist-section { margin-top: 12px; page-break-inside: avoid; }
+  .checklist-section:first-child { margin-top: 0; }
+  .checklist-section .section-title { font-size: 11.5px; font-weight: 700; color: #2A2A2A; margin: 0 0 2px; }
+  .checklist-section .section-note { font-size: 10px; color: #6B6B6B; font-style: italic; margin: 0 0 6px; }
+  .check-grid {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3px 16px;
+  }
+  .check-grid li {
+    font-size: 10.5px; color: #2A2A2A;
+    padding: 3px 0 3px 18px; position: relative; line-height: 1.4;
+  }
+  .check-grid li::before {
+    content: "✔"; color: #6B7F3F; font-weight: 700;
+    position: absolute; left: 0; top: 3px;
+  }
+
+  /* Contact callout */
+  .contact-box {
+    background: #F6F8F0; border: 1px solid #D5DCC1;
+    padding: 14px 18px; margin: 14px 0 0; border-radius: 4px;
+  }
+  .contact-box .h {
+    color: #56672F; font-size: 11.5px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 4px;
+  }
+  .contact-box p { margin: 0; font-size: 11px; line-height: 1.5; }
+  .contact-box a { color: #56672F; font-weight: 700; text-decoration: none; }
+
+  /* Footer */
+  .doc-foot {
+    margin-top: 18px; padding-top: 10px;
+    border-top: 1px solid #C9D2B0;
+    text-align: center; font-size: 9.5px; color: #6B6B6B; line-height: 1.6;
+  }
+  .doc-foot strong { color: #56672F; }
+  .doc-foot a { color: #56672F; text-decoration: none; }
 </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="brand">AZ-RI<small>HUD Environmental Reviews &amp; Transactional Due Diligence</small></div>
-    <div class="date">${today}</div>
+  <div class="doc-head">
+    <div>${logoSVG}</div>
+    <div class="head-right">
+      <div class="tag">HUD Environmental Reviews &amp; Transactional Due Diligence</div>
+      <a href="https://az-ri.com">az-ri.com</a> &middot; <a href="mailto:info@az-ri.com">info@az-ri.com</a><br>
+      919 W. 34th Street, #4706, Baltimore, MD 21211
+    </div>
   </div>
 
-  <h1>HUD Part 58 Environmental Review &mdash; Determination &amp; Quote</h1>
+  <h1>
+    Thanks, ${escapeHTML(firstName)}. Here's your determination.
+    <span class="lede">HUD Part 58 Environmental Review &mdash; Determination &amp; Quote &middot; ${today}</span>
+  </h1>
 
-  <table class="info">
-    ${projectInfoRows}
-  </table>
+  ${projectSummary ? `<p class="project-line"><strong>Project:</strong> ${projectSummary}</p>` : ''}
 
-  <div class="level-callout">
-    <div class="lbl">Required review level</div>
-    <div class="lvl">${escapeHTML(det.level)}</div>
-    <div class="cite">${escapeHTML(det.cite)}</div>
-    <p>${escapeHTML(det.explain)}</p>
+  <div class="determination">
+    <p class="label-line">Required Review Level</p>
+    <p class="level-big">${escapeHTML(det.level)}</p>
+    <p class="cite-big">${escapeHTML(det.cite)}</p>
+    <p class="explain">${escapeHTML(det.explain)}</p>
   </div>
 
-  <h2>Project quote &mdash; fixed fee</h2>
-  <table class="quote">
-    ${quoteRows}
-  </table>
-  <p class="muted" style="margin-top: 8px;">This is a project-specific quote based on the scope you described. It is not a published rate and may be revised once we confirm the full scope of work.</p>
+  <div class="quote-box">
+    <p class="price-label">Project quote &mdash; fixed fee</p>
+    <ul class="components">${quoteRows}</ul>
+    ${quote.components.length ? `
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-amount">${escapeHTML(quote.totalDisplay)}</span>
+      </div>` : ''}
+    <p class="price-disclaimer">This is a project-specific quote based on the scope you described. It is not a published rate and may be revised once we confirm the full scope.</p>
+  </div>
 
-  ${checklistHTML}
+  ${factors.length ? `
+  <div class="checklist-box">
+    <p class="checklist-label">Compliance factors required for your review</p>
+    <p class="checklist-intro">${checklistIntro}</p>
+    ${checklistHTML}
+  </div>` : ''}
 
-  <h2>Next steps</h2>
-  <p>Reply to your form-submission confirmation, or contact <a href="mailto:info@az-ri.com">info@az-ri.com</a> to engage AZ-RI Consultants for this work. Either Scott Rifkin or Nathaniel Alper will follow up to confirm scope and start the review.</p>
+  <div class="contact-box">
+    <p class="h">Have questions or ready to move forward?</p>
+    <p>Contact AZ-RI Consultants at <a href="mailto:info@az-ri.com">info@az-ri.com</a> or visit <a href="https://az-ri.com">az-ri.com</a>. Scott Rifkin or Nathaniel Alper will follow up to confirm scope and start the review within one business day.</p>
+  </div>
 
-  <div class="footer">
-    <strong>AZ-RI Consultants</strong> &middot; 919 W. 34th Street, #4706, Baltimore, MD 21211 &middot; az-ri.com<br>
+  <div class="doc-foot">
+    <strong>AZ-RI Consultants</strong> &middot; 919 W. 34th Street, #4706, Baltimore, MD 21211<br>
+    <a href="https://az-ri.com">az-ri.com</a> &middot; <a href="mailto:info@az-ri.com">info@az-ri.com</a><br>
     Generated ${today} based on responses submitted to the AZ-RI HUD ER intake form.
   </div>
 
 </body>
 </html>`;
 }
-
-updateConditionals();
-
-/* =============================================================================
-   AUTO-RESIZE WHEN EMBEDDED IN AN IFRAME (e.g., from WordPress)
-   Posts the document height to the parent so the iframe can match content
-   height with no scroll bar. Safe no-op when opened directly.
-   ========================================================================== */
-(function () {
-  if (window.parent === window) return; // not in an iframe
-  function postHeight() {
-    var h = Math.max(
-      document.body.scrollHeight,
-      document.documentElement.scrollHeight,
-      document.body.offsetHeight,
-      document.documentElement.offsetHeight
-    );
-    window.parent.postMessage({ type: 'azri-er-form-height', height: h }, '*');
-  }
-  window.addEventListener('load', postHeight);
-  if (typeof ResizeObserver !== 'undefined') {
-    var ro = new ResizeObserver(postHeight);
-    ro.observe(document.body);
-  } else {
-    // Fallback: poll every 500ms
-    setInterval(postHeight, 500);
-  }
-})();
-</script>
-</body>
-</html>
