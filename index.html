@@ -1344,3 +1344,33 @@ function generatePrintableHTML(det, quote, data) {
 </body>
 </html>`;
 }
+
+updateConditionals();
+
+/* =============================================================================
+   AUTO-RESIZE WHEN EMBEDDED IN AN IFRAME (e.g., from WordPress)
+   Posts the document height to the parent so the iframe can match content
+   height with no scroll bar. Safe no-op when opened directly.
+   ========================================================================== */
+(function () {
+  if (window.parent === window) return; // not in an iframe
+  function postHeight() {
+    var h = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight
+    );
+    window.parent.postMessage({ type: 'azri-er-form-height', height: h }, '*');
+  }
+  window.addEventListener('load', postHeight);
+  if (typeof ResizeObserver !== 'undefined') {
+    var ro = new ResizeObserver(postHeight);
+    ro.observe(document.body);
+  } else {
+    setInterval(postHeight, 500);
+  }
+})();
+</script>
+</body>
+</html>
