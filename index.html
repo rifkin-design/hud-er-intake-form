@@ -412,7 +412,7 @@
       </p>
     </div>
 
-    <p style="font-size:14px; margin: 16px 0 8px;">A copy has been emailed to <strong id="r-email"></strong>. Have questions or ready to move forward?</p>
+    <p style="font-size:14px; margin: 16px 0 8px;">Have questions or ready to move forward?</p>
 
     <div class="cta-row single">
       <a id="cta-email" href="mailto:info@az-ri.com">Email us</a>
@@ -595,7 +595,10 @@ function determineLevel(d) {
       ? { level: "EA", cite: "24 CFR \u00A758.36", explain: "Public facility/improvement work exceeding \u00A758.35(a)(1) thresholds typically requires an EA.", key: "EA" }
       : { level: "CEST", cite: "24 CFR \u00A758.35(a)(1)", explain: "Acquisition, repair, improvement, reconstruction, or rehab of an existing public facility within thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
   }
-  if (['new_construction_sf','new_construction_mf','new_construction_public','acquisition_vacant_for_construction','demolition','change_of_use'].includes(a)) {
+  if (a === 'new_construction_sf') {
+    return { level: "CEST", cite: "24 CFR \u00A758.35(a)(4)", explain: "New construction of a one-to-four family dwelling qualifies as an Individual Action under \u00A758.35(a)(4) and is categorically excluded subject to \u00A758.5 \u2014 full related-laws review required.", key: "CEST" };
+  }
+  if (['new_construction_mf','new_construction_public','acquisition_vacant_for_construction','demolition','change_of_use'].includes(a)) {
     return { level: "EA", cite: "24 CFR \u00A758.36", explain: "New construction, demolition, or change-of-use projects typically require a full Environmental Assessment under NEPA.", key: "EA" };
   }
   return { level: "Consultation needed", cite: "24 CFR Part 58", explain: "Your project profile needs a brief consultation before we can finalize the level.", key: "CONSULT" };
@@ -817,7 +820,7 @@ function showResult(det, quote, data, isDemo) {
   document.getElementById('r-level').textContent   = det.level;
   document.getElementById('r-cite').textContent    = det.cite;
   document.getElementById('r-explain').textContent = det.explain;
-  document.getElementById('r-email').textContent   = emailField.value.trim();
+  // r-email element removed; intentionally not setting it
 
   const ul = document.getElementById('r-components');
   if (quote.components.length) {
