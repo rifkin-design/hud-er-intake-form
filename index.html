@@ -420,6 +420,19 @@
       </div>
     </div>
 
+    <!-- New SF construction: ask about scattered-site scope per §58.35(a)(4) -->
+    <div id="new-construction-sf-scope" style="display:none;">
+      <div class="field">
+        <label>Scope of new construction <span class="req">*</span></label>
+        <div class="help" style="margin-bottom:6px;">An "Individual Action" under §58.35(a)(4) qualifies for CEST. Projects of 5+ units not meeting the scattered-site criteria require an EA under §58.36.</div>
+        <div class="radio-group">
+          <label><input type="radio" name="sf_construction_scope" value="single"> <span>Single 1–4 unit dwelling</span></label>
+          <label><input type="radio" name="sf_construction_scope" value="scattered"> <span>5+ units on scattered sites &mdash; sites &gt;2,000 ft apart, &le;4 units per site</span></label>
+          <label><input type="radio" name="sf_construction_scope" value="other"> <span>5+ units &mdash; sites within 2,000 ft of each other, or any other configuration</span></label>
+        </div>
+      </div>
+    </div>
+
     <!-- Acquisition: ask if SF or commercial so we price ESA correctly -->
     <div id="acquisition-property-type" style="display:none;">
       <div class="field">
@@ -754,7 +767,14 @@ function determineLevel(d) {
       : { level: "CEST", cite: "24 CFR \u00A758.35(a)(1)", explain: "Acquisition, repair, improvement, reconstruction, or rehab of an existing public facility within thresholds is categorically excluded subject to \u00A758.5.", key: "CEST" };
   }
   if (a === 'new_construction_sf') {
-    return { level: "CEST", cite: "24 CFR \u00A758.35(a)(4)", explain: "New construction of a one-to-four family dwelling qualifies as an Individual Action under \u00A758.35(a)(4) and is categorically excluded subject to \u00A758.5 \u2014 full related-laws review required.", key: "CEST" };
+    if (d.sf_construction_scope === 'scattered') {
+      return { level: "CEST", cite: "24 CFR \u00A758.35(a)(4)", explain: "Scattered-site new construction with sites more than 2,000 feet apart and no more than 4 units per site qualifies as an Individual Action under \u00A758.35(a)(4) and is categorically excluded subject to \u00A758.5.", key: "CEST" };
+    }
+    if (d.sf_construction_scope === 'single' || !d.sf_construction_scope) {
+      return { level: "CEST", cite: "24 CFR \u00A758.35(a)(4)", explain: "New construction of a one-to-four family dwelling qualifies as an Individual Action under \u00A758.35(a)(4) and is categorically excluded subject to \u00A758.5 \u2014 full related-laws review required.", key: "CEST" };
+    }
+    // 'other' = 5+ units not meeting scattered-site criteria \u2192 EA
+    return { level: "EA", cite: "24 CFR \u00A758.36", explain: "Projects of 5 or more dwelling units that do not meet the scattered-site criteria of \u00A758.35(a)(4) (sites must be more than 2,000 feet apart with no more than 4 units per site) require a full Environmental Assessment under NEPA.", key: "EA" };
   }
   if (['new_construction_mf','new_construction_public','acquisition_vacant_for_construction','demolition','change_of_use'].includes(a)) {
     return { level: "EA", cite: "24 CFR \u00A758.36", explain: "New construction, demolition, or change-of-use projects typically require a full Environmental Assessment under NEPA.", key: "EA" };
@@ -814,6 +834,8 @@ function updateConditionals() {
   rehabBlock.style.display   = rehabActivities.includes(a) ? '' : 'none';
   pubFacBlock.style.display  = pubFacility.includes(a)     ? '' : 'none';
   acqTypeBlock.style.display = a === 'acquisition_existing_no_change' ? '' : 'none';
+  const sfScope = document.getElementById('new-construction-sf-scope');
+  if (sfScope) sfScope.style.display = a === 'new_construction_sf' ? '' : 'none';
 }
 activitySel.addEventListener('change', updateConditionals);
 
@@ -993,7 +1015,7 @@ function generatePDFBlob(det, quote, data) {
     }
     const html = generatePrintableHTML(det, quote, data);
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed; left:-10000px; top:0; width:8.5in; height:11in; border:0;';
+    iframe.style.cssText = 'position:fixed; left:-10000px; top:0; width:7.7in; height:11in; border:0;';
     document.body.appendChild(iframe);
 
     const cleanup = () => { try { document.body.removeChild(iframe); } catch (_) {} };
@@ -1003,12 +1025,12 @@ function generatePDFBlob(det, quote, data) {
       setTimeout(async () => {
         try {
           const opt = {
-            margin: 0,
+            margin: 0.4,
             filename: 'HUD-ER-Determination.pdf',
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 816, width: 816 },
+            image: { type: 'jpeg', quality: 0.96 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            pagebreak: { mode: ['css', 'legacy'] }
           };
           const blob = await html2pdf()
             .set(opt)
@@ -1170,11 +1192,12 @@ function generatePrintableHTML(det, quote, data) {
   html, body { margin: 0; padding: 0; }
   body {
     font-family: Helvetica, Arial, sans-serif;
-    color: #2A2A2A; background: #FAFAF7;
+    color: #2A2A2A; background: #FFFFFF;
     line-height: 1.45;
     font-size: 11px;
-    width: 8.5in;
-    padding: 0.5in 0.6in;
+    width: 7.7in;
+    margin: 0;
+    padding: 0;
   }
   .doc-head {
     display: flex; justify-content: space-between; align-items: flex-end;
