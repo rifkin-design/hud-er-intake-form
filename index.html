@@ -468,7 +468,7 @@
     <p class="explain" id="r-explain"></p>
 
     <div class="quote-box" id="r-quote-box">
-      <p class="price-label">Project quote &mdash; fixed fee</p>
+      <p class="price-label">Project quote</p>
       <ul class="components" id="r-components"></ul>
       <div class="total-row" id="r-total-row">
         <span class="total-label">Total</span>
@@ -1089,7 +1089,7 @@ function renderChecklist(det) {
   box.style.display = '';
 
   const totalCount = factors.reduce((n, f) => n + f.items.length, 0);
-  intro.textContent = `Your ${det.level} review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the fixed-fee scope.`;
+  intro.textContent = `Your ${det.level} review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the engagement.`;
 
   content.innerHTML = factors.map(section => `
     <div class="checklist-section">
@@ -1146,7 +1146,7 @@ function generatePrintableHTML(det, quote, data) {
 
   const totalCount = factors.reduce((n, f) => n + f.items.length, 0);
   const checklistIntro = factors.length
-    ? `Your <strong>${escapeHTML(det.level)}</strong> review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the fixed-fee scope.`
+    ? `Your <strong>${escapeHTML(det.level)}</strong> review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the engagement.`
     : '';
 
   const projectSummary = [
@@ -1156,15 +1156,8 @@ function generatePrintableHTML(det, quote, data) {
     data.project_location
   ].filter(Boolean).map(escapeHTML).join(' &middot; ');
 
-  // SVG logo - AZ-RI olive-green wordmark with small house roof between A/Z and R/I
-  const logoSVG = `
-    <svg viewBox="0 0 240 78" xmlns="http://www.w3.org/2000/svg" style="width:140px;height:auto;display:block;">
-      <text x="0" y="58" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="62" fill="#6B7F3F" letter-spacing="-2">AZ</text>
-      <polygon points="76,18 92,18 84,8" fill="#6B7F3F"/>
-      <line x1="76" y1="50" x2="92" y2="50" stroke="#6B7F3F" stroke-width="3"/>
-      <text x="128" y="58" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="62" fill="#6B7F3F" letter-spacing="-2">RI</text>
-      <text x="0" y="74" font-family="Helvetica, Arial, sans-serif" font-weight="500" font-size="8" fill="#2A2A2A" letter-spacing="3">CONSULTANTS</text>
-    </svg>`;
+  // Logo: bold "AZ-RI Consultants" wordmark in corporate olive green
+  const logoSVG = `<div style="font-family:Helvetica,Arial,sans-serif;font-weight:800;font-size:24px;color:#6B7F3F;letter-spacing:-0.01em;line-height:1;">AZ-RI Consultants</div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -1313,7 +1306,7 @@ function generatePrintableHTML(det, quote, data) {
   </div>
 
   <div class="quote-box">
-    <p class="price-label">Project quote &mdash; fixed fee</p>
+    <p class="price-label">Project quote</p>
     <ul class="components">${quoteRows}</ul>
     ${quote.components.length ? `
       <div class="total-row">
@@ -1332,7 +1325,7 @@ function generatePrintableHTML(det, quote, data) {
 
   <div class="contact-box">
     <p class="h">Have questions or ready to move forward?</p>
-    <p>Contact AZ-RI Consultants at <a href="mailto:info@az-ri.com">info@az-ri.com</a> or visit <a href="https://az-ri.com">az-ri.com</a>. Scott Rifkin or Nathaniel Alper will follow up to confirm scope and start the review within one business day.</p>
+    <p>Contact AZ-RI Consultants at <a href="mailto:info@az-ri.com">info@az-ri.com</a> or visit <a href="https://az-ri.com">az-ri.com</a>.</p>
   </div>
 
   <div class="doc-foot">
