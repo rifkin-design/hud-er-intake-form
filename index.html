@@ -206,6 +206,69 @@
     line-height: 1.4;
   }
 
+  /* Compliance checklist */
+  .checklist-box {
+    margin: 20px 0 18px;
+    padding: 20px 22px;
+    background: var(--azri-white);
+    border: 1px solid var(--azri-grey-light);
+    border-radius: var(--radius);
+  }
+  .checklist-box .checklist-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--azri-olive-dark); font-weight: 700; margin: 0 0 4px;
+  }
+  .checklist-box .checklist-intro {
+    font-size: 13px; color: var(--azri-grey); margin: 0 0 14px; line-height: 1.4;
+  }
+  .checklist-section { margin-top: 14px; }
+  .checklist-section:first-child { margin-top: 0; }
+  .checklist-section .section-title {
+    font-size: 14px; font-weight: 700; color: var(--azri-charcoal); margin: 0 0 2px;
+  }
+  .checklist-section .section-note {
+    font-size: 12px; color: var(--azri-grey); font-style: italic; margin: 0 0 8px;
+  }
+  .checklist-section ul {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
+  }
+  @media (max-width: 540px) {
+    .checklist-section ul { grid-template-columns: 1fr; }
+  }
+  .checklist-section li {
+    font-size: 13px; color: var(--azri-charcoal);
+    padding: 4px 0 4px 22px;
+    position: relative;
+    line-height: 1.35;
+  }
+  .checklist-section li::before {
+    content: "\2714";
+    color: var(--azri-olive);
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+    top: 4px;
+  }
+  .pdf-btn-row {
+    display: flex; justify-content: center; margin-top: 14px;
+  }
+  button.pdf-btn {
+    background: var(--azri-white);
+    color: var(--azri-olive-dark);
+    border: 1px solid var(--azri-olive);
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 120ms;
+  }
+  button.pdf-btn:hover {
+    background: var(--azri-olive-light);
+  }
+
   .cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
   .cta-row.single { grid-template-columns: 1fr; max-width: 320px; margin-left: auto; margin-right: auto; }
   @media (max-width: 540px) { .cta-row { grid-template-columns: 1fr; } }
@@ -231,6 +294,10 @@
   .footer-note { margin-top: 32px; text-align: center; font-size: 13px; color: var(--azri-grey); }
   .footer-note a { color: var(--azri-olive-dark); }
 </style>
+
+<!-- html2pdf.js: converts the printable HTML to a real PDF Blob that we can
+     attach to the Formspree submission so you see exactly what the prospect sees -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -412,7 +479,17 @@
       </p>
     </div>
 
-    <p style="font-size:14px; margin: 16px 0 8px;">Have questions or ready to move forward?</p>
+    <div class="checklist-box" id="r-checklist-box">
+      <p class="checklist-label">Compliance factors required for your review</p>
+      <p class="checklist-intro" id="r-checklist-intro"></p>
+      <div id="r-checklist-content"></div>
+    </div>
+
+    <div class="pdf-btn-row">
+      <button type="button" class="pdf-btn" id="download-pdf">Download PDF summary</button>
+    </div>
+
+    <p style="font-size:14px; margin: 24px 0 8px;">Have questions or ready to move forward?</p>
 
     <div class="cta-row single">
       <a id="cta-email" href="mailto:info@az-ri.com">Email us</a>
@@ -481,6 +558,87 @@ const PRICE_PHASE_I = 2300;
 const PRICE_LIMITED_ESA = 1250;
 
 function fmt$(n) { return "$" + n.toLocaleString("en-US"); }
+
+/* =============================================================================
+   COMPLIANCE FACTORS — what's required at each level
+   Source: 24 CFR §58.5 / §58.6 / §58.36
+   ========================================================================== */
+
+const COMPLIANCE_FACTORS = {
+  statutory: {
+    title: "Statutory checklist — 24 CFR §58.6",
+    note: "Required at all review levels (CENST, CEST, EA).",
+    items: [
+      { name: "Airport Hazards", desc: "Determine if site is within specified distance of civil/military airports." },
+      { name: "Coastal Barrier Resources", desc: "USFWS CBRS mapper for designated coastal barrier units." },
+      { name: "Flood Insurance", desc: "Participation in NFIP; confirm flood insurance availability if in SFHA." }
+    ]
+  },
+  environmental: {
+    title: "Environmental compliance — 24 CFR §58.5",
+    note: "Required for CEST and EA reviews.",
+    items: [
+      { name: "Air Quality", desc: "Review EPA nonattainment status; assess conformity with SIPs." },
+      { name: "Coastal Zone Management", desc: "Consistency with state coastal zone management program." },
+      { name: "Contamination & Toxic Substances", desc: "Phase I ESA (ASTM E1527-21), Limited ESA, or checklist." },
+      { name: "Endangered Species", desc: "IPaC consultation with USFWS." },
+      { name: "Explosives & Flammables", desc: "ASTs and hazardous facilities within HUD-defined distances." },
+      { name: "Farmlands Protection", desc: "Determine if site includes prime or unique farmland." },
+      { name: "Floodplain Management", desc: "FEMA flood zone determination." },
+      { name: "Historic Preservation", desc: "Section 106 review; SHPO consultation." },
+      { name: "Noise Abatement & Control", desc: "DNL noise assessment, STraCAT, and BPM." },
+      { name: "Sole Source Aquifers", desc: "EPA sole source aquifer review." },
+      { name: "Wetlands Protection", desc: "NWI mapper review; delineation if wetlands present." },
+      { name: "Wild & Scenic Rivers", desc: "Check National Wild and Scenic Rivers inventory for proximity." },
+      { name: "Housing Requirements", desc: "Lead-based paint, asbestos, radon, pressurized pipelines, fall hazards, oil/gas/sour gas wells/slush pits." }
+    ]
+  },
+  ea_additional: {
+    title: "Additional EA requirements — 24 CFR §58.36",
+    note: "Required only for EA-level reviews.",
+    items: [
+      { name: "Land Development", desc: "Compatibility with local land use plans, zoning, and development patterns; soil stability and erosion impacts." },
+      { name: "Socioeconomic", desc: "Effects on employment, income, demographics, displacement, and community character." },
+      { name: "Community Facilities/Services", desc: "Impacts on schools, hospitals, police/fire, water/sewer capacity, and public transit." },
+      { name: "Natural Features", desc: "Impacts on topography, surface water, groundwater, vegetation, and unique natural features." },
+      { name: "Climate and Energy", desc: "Energy consumption, greenhouse gas implications, and effects on climate resilience." }
+    ]
+  }
+};
+
+function getApplicableFactors(levelKey) {
+  switch (levelKey) {
+    case 'EXEMPT': return [];
+    case 'CENST':  return [COMPLIANCE_FACTORS.statutory];
+    case 'CEST':   return [COMPLIANCE_FACTORS.statutory, COMPLIANCE_FACTORS.environmental];
+    case 'EA':     return [COMPLIANCE_FACTORS.statutory, COMPLIANCE_FACTORS.environmental, COMPLIANCE_FACTORS.ea_additional];
+    default:       return []; // CONSULT or unknown
+  }
+}
+
+// Human-readable label for an activity dropdown value (used in the PDF summary)
+const ACTIVITY_LABELS = {
+  planning_admin: "Planning, administration, technical assistance, training, design (no construction)",
+  tbra: "Tenant-Based Rental Assistance (TBRA)",
+  supportive_services: "Supportive services",
+  operating_costs: "Operating costs / utilities / maintenance / staff salaries",
+  econ_dev_no_construction: "Economic development — jobs/training (no construction)",
+  homebuyer_existing: "Homebuyer assistance for existing units (DPA, closing costs)",
+  predev_costs: "Affordable housing pre-development costs",
+  acquisition_existing_no_change: "Acquisition of an existing structure (no rehab, no use change)",
+  rehab_residential_1to4: "Rehab of an existing 1–4 unit residential building",
+  rehab_residential_5plus: "Rehab of an existing multifamily building (5+ units)",
+  rehab_nonresidential: "Rehab of an existing non-residential building",
+  rehab_public_facility: "Rehab/improvement of an existing public facility",
+  new_construction_sf: "New construction — single-family",
+  new_construction_mf: "New construction — multifamily",
+  new_construction_public: "New construction — public facility / infrastructure",
+  acquisition_vacant_for_construction: "Acquisition of vacant land for future construction",
+  demolition: "Demolition",
+  change_of_use: "Change of land use",
+  not_sure: "Not sure — consultation needed"
+};
+function getActivityLabel(key) { return ACTIVITY_LABELS[key] || key || "Not specified"; }
 
 // Single-family eligibility for Limited ESA (HUD definition: 1\u20134 units residential)
 function isSingleFamily(d) {
@@ -805,6 +963,17 @@ async function finalizeSubmit() {
 
   try {
     const formData = new FormData(form);
+
+    // Generate the same PDF the user will see and attach it to the submission
+    // (so Scott sees exactly what they received). Best-effort: if PDF generation
+    // fails for any reason, we still submit the form data without the attachment.
+    try {
+      const pdfBlob = await generatePDFBlob(det, quote, data);
+      formData.append('attachment', pdfBlob, 'HUD-ER-Determination.pdf');
+    } catch (pdfErr) {
+      console.warn('PDF generation failed; submitting without attachment.', pdfErr);
+    }
+
     const resp = await fetch(form.action, {
       method: "POST", body: formData, headers: { "Accept": "application/json" }
     });
@@ -813,6 +982,50 @@ async function finalizeSubmit() {
   } catch {
     alert("There was a problem submitting. Please try again or email us at info@az-ri.com.");
   }
+}
+
+// Render the printable HTML in an off-screen iframe and convert to PDF Blob.
+// Uses html2pdf.bundle.min.js loaded from CDN in <head>. Returns a Blob.
+function generatePDFBlob(det, quote, data) {
+  return new Promise((resolve, reject) => {
+    if (typeof html2pdf === 'undefined') {
+      return reject(new Error('html2pdf library not loaded'));
+    }
+    const html = generatePrintableHTML(det, quote, data);
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed; left:-10000px; top:0; width:8.5in; height:11in; border:0;';
+    document.body.appendChild(iframe);
+
+    const cleanup = () => { try { document.body.removeChild(iframe); } catch (_) {} };
+
+    iframe.onload = () => {
+      // Give styles a tick to apply before rendering
+      setTimeout(async () => {
+        try {
+          const opt = {
+            margin: 0,
+            filename: 'HUD-ER-Determination.pdf',
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 850 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          };
+          const blob = await html2pdf()
+            .set(opt)
+            .from(iframe.contentDocument.body)
+            .outputPdf('blob');
+          cleanup();
+          resolve(blob);
+        } catch (e) {
+          cleanup();
+          reject(e);
+        }
+      }, 150);
+    };
+
+    iframe.onerror = () => { cleanup(); reject(new Error('iframe load error')); };
+    iframe.srcdoc = html;
+  });
 }
 
 function showResult(det, quote, data, isDemo) {
@@ -844,6 +1057,13 @@ function showResult(det, quote, data, isDemo) {
     }
   }
 
+  // Render the compliance checklist
+  renderChecklist(det);
+
+  // Wire up the PDF download button (idempotent \u2014 can be called repeatedly)
+  const pdfBtn = document.getElementById('download-pdf');
+  pdfBtn.onclick = () => downloadPDF(det, quote, data);
+
   if (isDemo) {
     const banner = document.createElement('div');
     banner.style.cssText = "background:#FFF8E1;border:1px solid #E6B800;padding:10px 14px;border-radius:4px;margin-bottom:16px;font-size:13px;color:#7A5A00;";
@@ -854,6 +1074,182 @@ function showResult(det, quote, data, isDemo) {
   form.style.display = 'none';
   resultPanel.style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderChecklist(det) {
+  const factors = getApplicableFactors(det.key);
+  const box = document.getElementById('r-checklist-box');
+  const intro = document.getElementById('r-checklist-intro');
+  const content = document.getElementById('r-checklist-content');
+
+  if (!factors.length) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = '';
+
+  const totalCount = factors.reduce((n, f) => n + f.items.length, 0);
+  intro.textContent = `Your ${det.level} review covers ${totalCount} compliance factor${totalCount === 1 ? '' : 's'} across the categories below. Each item has its own determination and documentation requirement; AZ-RI handles all of them as part of the fixed-fee scope.`;
+
+  content.innerHTML = factors.map(section => `
+    <div class="checklist-section">
+      <p class="section-title">${section.title}</p>
+      <p class="section-note">${section.note}</p>
+      <ul>
+        ${section.items.map(it => `<li>${it.name}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+}
+
+function downloadPDF(det, quote, data) {
+  const html = generatePrintableHTML(det, quote, data);
+  const w = window.open('', '_blank');
+  if (!w) {
+    alert("Pop-up blocked. Allow pop-ups for this site to download the PDF, or use your browser's File \u2192 Print \u2192 Save as PDF instead.");
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  // Give the new window time to render before triggering print
+  setTimeout(() => { try { w.focus(); w.print(); } catch (e) {} }, 350);
+}
+
+function generatePrintableHTML(det, quote, data) {
+  const factors = getApplicableFactors(det.key);
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const activityLabel = getActivityLabel(data.activity_category);
+  const escapeHTML = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+
+  const projectInfoRows = [
+    ['Prepared for', `${escapeHTML(data.contact_name)}${data.contact_org ? ' \u2014 ' + escapeHTML(data.contact_org) : ''}`],
+    ['HUD funding program', escapeHTML(data.funding_program) || '\u2014'],
+    ['Activity', escapeHTML(activityLabel)],
+    ['Project location', escapeHTML(data.project_location) || '\u2014']
+  ].map(([k,v]) => `<tr><td class="lbl">${k}</td><td>${v}</td></tr>`).join('');
+
+  const quoteRows = quote.components.length
+    ? quote.components.map(c => `
+        <tr>
+          <td>
+            <div><strong>${escapeHTML(c.name)}</strong></div>
+            ${c.note ? `<div class="muted">${escapeHTML(c.note)}</div>` : ''}
+          </td>
+          <td class="amt">${escapeHTML(c.amountDisplay)}</td>
+        </tr>`).join('') + `
+        <tr class="total">
+          <td><strong>Total</strong></td>
+          <td class="amt"><strong>${escapeHTML(quote.totalDisplay)}</strong></td>
+        </tr>`
+    : `<tr><td colspan="2">${escapeHTML(quote.totalDisplay)}</td></tr>`;
+
+  const checklistHTML = factors.length ? `
+    <h2>Compliance factors required for your review</h2>
+    <p class="muted" style="margin:0 0 12px;">A ${det.level} review covers each item below. AZ-RI handles all of them as part of the fixed-fee scope.</p>
+    ${factors.map(section => `
+      <h3>${escapeHTML(section.title)}</h3>
+      <p class="muted" style="margin:0 0 8px;">${escapeHTML(section.note)}</p>
+      <table class="checklist">
+        <thead>
+          <tr><th style="width:30%;">Compliance factor</th><th style="width:8%; text-align:center;">Required</th><th>What's involved</th></tr>
+        </thead>
+        <tbody>
+          ${section.items.map(it => `
+            <tr>
+              <td><strong>${escapeHTML(it.name)}</strong></td>
+              <td class="check">\u2714</td>
+              <td>${escapeHTML(it.desc)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    `).join('')}
+  ` : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HUD ER Determination \u2014 ${escapeHTML(data.contact_org || 'AZ-RI Consultants')}</title>
+<style>
+  @page { size: letter; margin: 0.6in; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #2A2A2A; line-height: 1.45; font-size: 12px;
+    margin: 0; padding: 24px;
+  }
+  .header { border-bottom: 3px solid #6B7F3F; padding-bottom: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: baseline; }
+  .header .brand { font-size: 26px; font-weight: 800; color: #6B7F3F; letter-spacing: 0.04em; }
+  .header .brand small { font-size: 10px; font-weight: 400; color: #6B6B6B; letter-spacing: 0; display: block; margin-top: 2px; }
+  .header .date { font-size: 11px; color: #6B6B6B; }
+  h1 { color: #56672F; font-size: 18px; margin: 4px 0 12px; }
+  h2 { color: #56672F; font-size: 14px; margin: 22px 0 6px; border-bottom: 1px solid #DDD; padding-bottom: 3px; }
+  h3 { color: #2A2A2A; font-size: 12px; margin: 14px 0 2px; }
+  .muted { color: #6B6B6B; font-size: 11px; font-style: italic; }
+  table { width: 100%; border-collapse: collapse; }
+  table.info td { padding: 5px 8px; border-bottom: 1px solid #EEE; vertical-align: top; }
+  table.info td.lbl { width: 30%; color: #6B6B6B; font-weight: 600; }
+  table.quote td { padding: 8px; border-bottom: 1px solid #DDD; vertical-align: top; }
+  table.quote tr.total td { border-top: 2px solid #6B7F3F; border-bottom: none; padding-top: 10px; font-size: 14px; }
+  table.quote td.amt { text-align: right; white-space: nowrap; }
+  table.checklist th { background: #6B7F3F; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; font-weight: 700; }
+  table.checklist td { padding: 6px 8px; border-bottom: 1px solid #E5E5E5; vertical-align: top; font-size: 11px; }
+  table.checklist td.check { text-align: center; color: #6B7F3F; font-weight: 700; font-size: 14px; }
+  .level-callout { background: #E8ECDC; border-left: 4px solid #6B7F3F; padding: 12px 16px; border-radius: 4px; margin: 12px 0 16px; }
+  .level-callout .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: #56672F; font-weight: 700; }
+  .level-callout .lvl { font-size: 24px; font-weight: 800; color: #2A2A2A; margin: 4px 0 2px; }
+  .level-callout .cite { font-family: Menlo, Consolas, monospace; color: #56672F; font-size: 11px; margin-bottom: 6px; }
+  .level-callout p { margin: 0; font-size: 11px; }
+  .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #DDD; font-size: 10px; color: #6B6B6B; text-align: center; }
+  .footer strong { color: #56672F; }
+  @media print {
+    body { padding: 0; }
+    .checklist-section { page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand">AZ-RI<small>HUD Environmental Reviews &amp; Transactional Due Diligence</small></div>
+    <div class="date">${today}</div>
+  </div>
+
+  <h1>HUD Part 58 Environmental Review &mdash; Determination &amp; Quote</h1>
+
+  <table class="info">
+    ${projectInfoRows}
+  </table>
+
+  <div class="level-callout">
+    <div class="lbl">Required review level</div>
+    <div class="lvl">${escapeHTML(det.level)}</div>
+    <div class="cite">${escapeHTML(det.cite)}</div>
+    <p>${escapeHTML(det.explain)}</p>
+  </div>
+
+  <h2>Project quote &mdash; fixed fee</h2>
+  <table class="quote">
+    ${quoteRows}
+  </table>
+  <p class="muted" style="margin-top: 8px;">This is a project-specific quote based on the scope you described. It is not a published rate and may be revised once we confirm the full scope of work.</p>
+
+  ${checklistHTML}
+
+  <h2>Next steps</h2>
+  <p>Reply to your form-submission confirmation, or contact <a href="mailto:info@az-ri.com">info@az-ri.com</a> to engage AZ-RI Consultants for this work. Either Scott Rifkin or Nathaniel Alper will follow up to confirm scope and start the review.</p>
+
+  <div class="footer">
+    <strong>AZ-RI Consultants</strong> &middot; 919 W. 34th Street, #4706, Baltimore, MD 21211 &middot; az-ri.com<br>
+    Generated ${today} based on responses submitted to the AZ-RI HUD ER intake form.
+  </div>
+
+</body>
+</html>`;
 }
 
 updateConditionals();
