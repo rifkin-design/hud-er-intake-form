@@ -559,7 +559,7 @@ const FREE_EMAIL_DOMAINS = [
    PRICING \u2014 single source of truth
    Built from the 2025 pricing sheet:
      CENST $500 | CEST $1,750 | CEST+EA $3,500
-     Phase I ESA $2,300 | Limited ESA $1,500
+     Phase I ESA $2,800+ | Limited ESA $1,500
    The Phase I or Limited ESA is REQUIRED to address the contamination
    section of any CEST or EA review (HUD compliance).
    ========================================================================== */
@@ -569,7 +569,7 @@ const PRICE_REVIEW = {
   CEST:  1750,
   EA:    3500
 };
-const PRICE_PHASE_I = 2300;
+const PRICE_PHASE_I = 2800;
 const PRICE_LIMITED_ESA = 1500;
 
 function fmt$(n) { return "$" + n.toLocaleString("en-US"); }
@@ -693,14 +693,14 @@ function buildQuote(det, d) {
       name: "Limited ESA",
       amount: PRICE_LIMITED_ESA,
       amountDisplay: fmt$(PRICE_LIMITED_ESA),
-      note: "Required to address the contamination section. HUD single-family compliant. A Phase I ESA (starting at $2,300, ASTM E1527-21) is available as an alternative if your lender or another party requires it."
+      note: "Required to address the contamination section. HUD single-family compliant. A Phase I ESA (starting at $2,800, ASTM E1527-21) is available as an alternative if your lender or another party requires it."
     };
   } else {
     esaComponent = {
       name: "Phase I ESA (ASTM E1527-21)",
       amount: PRICE_PHASE_I,
-      amountDisplay: fmt$(PRICE_PHASE_I),
-      note: "Required to address the contamination section. May range $2,300\u2013$2,800 based on size and complexity of the property."
+      amountDisplay: fmt$(PRICE_PHASE_I) + "+",
+      note: "Required to address the contamination section. Starting price; actual fee varies based on site size, complexity, number of structures, and travel distance."
     };
   }
 
