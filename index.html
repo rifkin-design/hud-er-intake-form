@@ -558,19 +558,20 @@ const FREE_EMAIL_DOMAINS = [
 /* =============================================================================
    PRICING \u2014 single source of truth
    Built from the 2025 pricing sheet:
-     CENST $500 | CEST $1,750 | CEST+EA $3,500
-     Phase I ESA $2,800-$3,500 | Limited ESA $1,250-$1,750
+     CENST $500 | CEST $1,750-$3,250 | EA $3,500
+     Phase I ESA $2,800-$4,000 | Limited ESA $1,250-$1,750
    The Phase I or Limited ESA is REQUIRED to address the contamination
    section of any CEST or EA review (HUD compliance).
    ========================================================================== */
 
 const PRICE_REVIEW = {
   CENST: 500,
-  CEST:  1750,
   EA:    3500
 };
+const PRICE_CEST_MIN = 1750;
+const PRICE_CEST_MAX = 3250;
 const PRICE_PHASE_I_MIN = 2800;
-const PRICE_PHASE_I_MAX = 3500;
+const PRICE_PHASE_I_MAX = 4000;
 const PRICE_LIMITED_ESA_MIN = 1250;
 const PRICE_LIMITED_ESA_MAX = 1750;
 
@@ -695,7 +696,6 @@ function buildQuote(det, d) {
   }
 
   // CEST or EA \u2014 review fee + REQUIRED ESA component
-  const reviewFee   = det.key === 'EA' ? PRICE_REVIEW.EA : PRICE_REVIEW.CEST;
   const reviewName  = det.key === 'EA' ? "HUD Environmental Review with EA (NEPA)" : "HUD Environmental Review (CEST)";
   const reviewNote  = det.key === 'EA'
     ? "Includes related-laws compliance and EA documentation."
@@ -721,10 +721,11 @@ function buildQuote(det, d) {
     };
   }
 
-  return summarize([
-    { name: reviewName, amount: reviewFee, amountDisplay: fmt$(reviewFee), note: reviewNote },
-    esaComponent
-  ]);
+  const reviewComponent = det.key === 'EA'
+    ? { name: reviewName, amount: PRICE_REVIEW.EA, amountDisplay: fmt$(PRICE_REVIEW.EA), note: reviewNote }
+    : { name: reviewName, amountMin: PRICE_CEST_MIN, amountMax: PRICE_CEST_MAX, amountDisplay: fmt$(PRICE_CEST_MIN) + " – " + fmt$(PRICE_CEST_MAX), note: reviewNote };
+
+  return summarize([ reviewComponent, esaComponent ]);
 }
 
 /* =============================================================================
